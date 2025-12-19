@@ -1,0 +1,22 @@
+# Master Outline（模板）
+
+## 多幕结构（建议三幕）
+
+### 第一幕：建立与触发（TBD）
+- 里程碑：TBD
+
+### 第二幕：对抗与升级（TBD）
+- 里程碑：TBD
+
+### 第三幕：收束与兑现（TBD）
+- 里程碑：TBD
+
+## 每 10 章里程碑（TBD）
+- ch001–ch010：TBD
+- ch011–ch020：TBD
+- ch021–ch030：TBD
+
+## 伏笔回收原则（强制）
+- 每个 `open_loop` 必须包含 `planned_payoff_window`（例：`ch020–ch030` 或 `Act2-middle`）。
+- 章节规划必须明确：本章推进哪些 `open_loops`；若新增 `open_loop`，必须给出回收窗口。
+

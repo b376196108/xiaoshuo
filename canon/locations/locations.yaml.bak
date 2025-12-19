@@ -1,0 +1,20 @@
+schema:
+  - id
+  - name
+  - type
+  - tags
+  - atmosphere
+  - key_objects
+  - rules
+  - connected_to
+
+locations:
+  - id: TBD_location_id
+    name: TBD
+    type: TBD
+    tags: []
+    atmosphere: TBD
+    key_objects: []
+    rules: []
+    connected_to: []
+

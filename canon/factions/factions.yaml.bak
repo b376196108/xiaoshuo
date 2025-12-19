@@ -1,0 +1,18 @@
+schema:
+  - id
+  - name
+  - motive
+  - resources
+  - methods
+  - public_face
+  - secret
+
+factions:
+  - id: TBD_faction_id
+    name: TBD
+    motive: TBD
+    resources: []
+    methods: []
+    public_face: TBD
+    secret: TBD
+

@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "current_chapter": 0,
+    "in_story_date": "TBD",
+    "pov": "TBD",
+    "tone_lock": "TBD",
+    "random_seed": "TBD"
+  },
+  "characters": {
+    "TBD_character_id": {
+      "location": "TBD",
+      "goal": "TBD",
+      "status": "TBD",
+      "relationships": [],
+      "knowledge_flags": []
+    }
+  },
+  "open_loops": [
+    {
+      "id": "TBD_loop_001",
+      "created_in": 0,
+      "description": "TBD",
+      "owner": "TBD_character_id",
+      "trigger": "TBD",
+      "planned_payoff_window": "TBD",
+      "status": "TBD"
+    }
+  ],
+  "world_state": {
+    "time_anchor": "TBD",
+    "weather": "TBD",
+    "economy": "TBD",
+    "tech_or_magic_level": "TBD",
+    "constraints": []
+  },
+  "continuity_locks": {
+    "forbidden_changes": [],
+    "must_hold": []
+  }
+}
+

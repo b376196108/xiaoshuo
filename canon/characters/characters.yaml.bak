@@ -1,0 +1,36 @@
+schema:
+  - id
+  - name
+  - aliases
+  - age
+  - appearance
+  - voice
+  - flaw
+  - goal
+  - fear
+  - secret
+  - arc
+  - relationships
+  - inventory
+  - knowledge_flags
+  - status
+  - location
+
+characters:
+  - id: TBD_character_id
+    name: TBD
+    aliases: []
+    age: TBD
+    appearance: TBD
+    voice: TBD
+    flaw: TBD
+    goal: TBD
+    fear: TBD
+    secret: TBD
+    arc: TBD
+    relationships: []
+    inventory: []
+    knowledge_flags: []
+    status: TBD
+    location: TBD
+

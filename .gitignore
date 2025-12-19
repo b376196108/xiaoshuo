@@ -1,0 +1,9 @@
+logs/
+runs/*/codex_stdout.log
+runs/*/codex_stderr.log
+runs/*/*.tmp
+state/backups/
+__pycache__/
+*.pyc
+.venv/
+.env

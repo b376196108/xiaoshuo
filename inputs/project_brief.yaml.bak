@@ -1,0 +1,17 @@
+# Human-readable template (system of record is `inputs/project_brief.json`)
+project:
+  genre: TBD
+  tone: TBD
+  rating: TBD
+  hook: TBD
+  theme: TBD
+  setting_anchor: TBD
+  protagonist_keywords: []
+  scale:
+    total_chapters: TBD
+    words_per_chapter: TBD
+constraints:
+  must_have: []
+  must_avoid: []
+random_seed: TBD
+

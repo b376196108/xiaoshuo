@@ -1,0 +1,42 @@
+# BOOTSTRAP_REPORT
+
+- generated_at_utc: 2025-12-19T06:25:55Z
+- repo_root: F:/Lianghuagit/xiaoshuo
+- codex_cli_detected: True
+
+## Directory Check
+- RESULT: PASS
+
+## File Check
+- RESULT: PASS
+
+## JSON Parse Check
+- `inputs/project_brief.json`: PASS — OK
+- `state/current_state.json`: PASS — OK
+
+## Python Compile Check
+- `python -m compileall tools`: PASS
+
+## Directory Tree (top)
+- `inputs/` (edit `inputs/project_brief.json`)
+- `canon/` (truth source; append-only by default)
+- `state/` (truth source; patch+merge only)
+- `recap/` (summaries)
+- `manuscript/` (chapters)
+- `runs/` (daily artifacts)
+
+## Next Steps
+1) 填写 `inputs/project_brief.json`：最少需要设置以下字段即可开始每日流水线：
+   - `project.genre`, `project.tone`, `project.rating`, `project.hook`, `project.theme`, `project.setting_anchor`
+   - `project.scale.total_chapters`, `project.scale.words_per_chapter`
+   - `constraints.must_have[]`, `constraints.must_avoid[]`（可为空数组）
+   - `random_seed`（建议稳定）
+2) 运行每日入口：`python tools/run_daily.py`
+
+### Commands
+```bash
+python -m compileall tools
+python tools/validate_repo.py
+python tools/run_daily.py --date YYYY-MM-DD --chapter NNN --words 2000
+```
+
