@@ -20,7 +20,10 @@
 - 结尾必须是四选一钩子类型：`新信息/误判/危机升级/目标转向`，并与冲突或伏笔相连。
 - 不要在正文里写“总结/清单/检查项”；所有流程性文本只允许出现在 `runs/` 与 QA 报告。
 
+- manuscript/chNNN.md body (excluding title lines) must be >=3000 chars; otherwise FAIL
+- Do not pad length with repetitive filler; use concrete actions/dialogue/escalation to reach length
 ## 输出格式（正文专用）
 - 文件开头：`# chNNN`
 - 正文只包含小说文本（可包含分隔符/场景切分，但不得包含元说明）。
+
 

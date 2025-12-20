@@ -3,7 +3,15 @@ from __future__ import annotations
 import compileall
 from pathlib import Path
 
-from _common import get_repo_root, is_codex_available, load_json, now_utc_iso, safe_write_text
+from _common import (
+    get_repo_root,
+    is_codex_available,
+    load_json,
+    now_utc_iso,
+    parse_chapter_num_from_id,
+    read_text,
+    safe_write_text,
+)
 
 
 REQUIRED_DIRS = [
@@ -74,6 +82,42 @@ def _check_json(path: Path) -> tuple[bool, str]:
     return True, "OK"
 
 
+def _check_chapter_titles(root: Path) -> list[str]:
+    warnings: list[str] = []
+    manuscript_dir = root / "manuscript"
+    if not manuscript_dir.exists():
+        return warnings
+
+    for path in manuscript_dir.glob("ch*.md"):
+        chap_id = path.stem
+        expected_first = f"# {chap_id}"
+        try:
+            text = read_text(path)
+        except OSError as exc:
+            warnings.append(f"{path.as_posix()}: read failed ({exc})")
+            continue
+        lines = text.splitlines()
+        if not lines:
+            warnings.append(f"{path.as_posix()}: empty file")
+            continue
+        if lines[0].strip() != expected_first:
+            warnings.append(f"{path.as_posix()}: first line should be '{expected_first}'")
+
+        if len(lines) > 1 and lines[1].strip().startswith("##"):
+            chapter_num = parse_chapter_num_from_id(chap_id)
+            if chapter_num is None:
+                if not lines[1].strip().startswith("## 第"):
+                    warnings.append(f"{path.as_posix()}: second line should match '## 第N章：...'")
+            else:
+                expected_prefix = f"## 第{chapter_num}章："
+                if not lines[1].strip().startswith(expected_prefix):
+                    warnings.append(
+                        f"{path.as_posix()}: second line should start with '{expected_prefix}'"
+                    )
+
+    return warnings
+
+
 def main() -> int:
     root = get_repo_root()
     report_path = root / "runs" / "BOOTSTRAP_REPORT.md"
@@ -95,6 +139,7 @@ def main() -> int:
 
     tools_dir = root / "tools"
     compile_ok = compileall.compile_dir(str(tools_dir), quiet=1)
+    title_warnings = _check_chapter_titles(root)
 
     ok_overall = (
         not missing_dirs
@@ -138,6 +183,15 @@ def main() -> int:
     lines.append(f"- `python -m compileall tools`: {'PASS' if compile_ok else 'FAIL'}")
 
     lines.append("")
+    lines.append("## Chapter Title Check")
+    if title_warnings:
+        lines.append("- RESULT: WARNING")
+        for warning in title_warnings:
+            lines.append(f"- WARNING: {warning}")
+    else:
+        lines.append("- RESULT: PASS")
+
+    lines.append("")
     lines.append("## Directory Tree (top)")
     lines.append("- `inputs/` (edit `inputs/project_brief.json`)")
     lines.append("- `canon/` (truth source; append-only by default)")
@@ -169,4 +223,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

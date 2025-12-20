@@ -1,0 +1,9 @@
+# Chapter Summary - ch001
+facts: 林岑在饥荒土屋醒来，发现粮缸见底、孩子挨饿、杜桂兰咳病，迫切定下刻线定量与“浸泡闷煮”省柴法，并用野菜焯水让当晚有一碗稠粥充饥。井边许文淑插队造谣林家藏粮占水，林岑被压一头；里正与差役透露名册将贴，夜里差役上门点名林国柱明卯时报到，赈灾资格受威胁。
+emotional_arc: 惊惶与羞愤→强撑镇定→短暂松口气→危机骤紧。
+conflicts: 粮荒与柴水短缺；毒舌邻居造谣挑衅；徭役名册压力。
+open_loops_touched:
+- {id: loop_food_shortage, how_it_moved: 家中粮缸见底，定量刻线+闷煮省柴暂缓饥饿但粮源更紧}
+- {id: loop_neighbor_sabotage, how_it_moved: 许文淑井边插队并散布林家藏粮占水谣言}
+- {id: loop_labor_levy, how_it_moved: 差役到村并夜里点名，明卯时集合}
+ending_hook: {type: crisis_escalation, payload: 差役夜里点名林国柱，明卯时报到，否则影响赈灾名额}

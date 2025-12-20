@@ -12,6 +12,8 @@ from _common import (
     get_repo_root,
     iso_today,
     load_json,
+    normalize_chapter_id,
+    parse_chapter_num_from_id,
     read_text,
     safe_write_text,
     setup_logger,
@@ -106,12 +108,29 @@ def _canon_change_watch(root: Path, run_dir: Path) -> tuple[list[str], list[str]
     return append_like, rewrite_like
 
 
+def _calc_body_chars(chapter_text: str, chap: str) -> int:
+    lines = chapter_text.splitlines()
+    start = 0
+    if lines and lines[0].strip() == f"# {chap}":
+        start = 1
+        if start < len(lines) and lines[start].lstrip().startswith("## 第"):
+            start += 1
+    body_lines = []
+    for line in lines[start:]:
+        if line.lstrip().startswith("#"):
+            continue
+        body_lines.append(line)
+    body_text = "".join(body_lines)
+    body_text = "".join(ch for ch in body_text if not ch.isspace())
+    return len(body_text)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run continuity and hard-rule checks; write runs/YYYY-MM-DD/qa_report.md."
     )
     parser.add_argument("--date", default=iso_today(), help="Run date (YYYY-MM-DD). Default: today.")
-    parser.add_argument("--chapter", type=int, required=True, help="Chapter number (NNN).")
+    parser.add_argument("--chapter", type=str, required=True, help="Chapter id (chNNN) or number (NNN).")
     parser.add_argument("--verbose", action="store_true", help="Verbose logging.")
     args = parser.parse_args()
 
@@ -122,7 +141,15 @@ def main() -> int:
         "continuity_checks", log_file=run_dir / "continuity_checks.log", verbose=args.verbose
     )
 
-    chap = chapter_id(args.chapter)
+    try:
+        chap = normalize_chapter_id(args.chapter)
+    except ValueError as e:
+        log.error("Invalid --chapter: %s (%s)", args.chapter, e)
+        return 2
+
+    if parse_chapter_num_from_id(chap) is None:
+        log.error("Invalid chapter id after normalization: %s", chap)
+        return 2
     chapter_path = root / "manuscript" / f"{chap}.md"
     summary_path = root / "recap" / "chapter_summaries" / f"{chap}.md"
     plan_path = run_dir / "chapter_plan.md"
@@ -132,6 +159,7 @@ def main() -> int:
     failures: list[dict[str, str]] = []
     warnings: list[dict[str, str]] = []
 
+    body_chars: int | None = None
     if not chapter_path.exists():
         failures.append(
             {
@@ -143,6 +171,15 @@ def main() -> int:
         chapter_text = ""
     else:
         chapter_text = read_text(chapter_path)
+        body_chars = _calc_body_chars(chapter_text, chap)
+        if body_chars < 3000:
+            failures.append(
+                {
+                    "rule": "BodyTooShort",
+                    "evidence": f"BodyTooShort: {body_chars}/3000",
+                    "fix": "Expand the manuscript body to >=3000 chars (excluding headers/whitespace).",
+                }
+            )
         if "TBD" in chapter_text:
             failures.append(
                 {
@@ -181,6 +218,39 @@ def main() -> int:
                         "fix": "Revise narration to remove first-person viewpoint drift.",
                     }
                 )
+
+    state_current_raw = meta.get("current_chapter")
+    state_current = None
+    if state_current_raw is not None:
+        try:
+            state_current = normalize_chapter_id(state_current_raw)
+        except ValueError:
+            warnings.append(
+                {
+                    "topic": "state_current_chapter_invalid",
+                    "evidence": f"state.meta.current_chapter invalid: {state_current_raw!r}",
+                    "suggestion": "Ensure state/current_state.json uses chapter id format like ch001.",
+                }
+            )
+
+    if state_current:
+        if chapter_path.exists():
+            if chap != state_current:
+                failures.append(
+                    {
+                        "rule": "chapter_id_mismatch",
+                        "evidence": f"manuscript={chap}.md vs state.meta.current_chapter={state_current}",
+                        "fix": "Align state meta current_chapter with the manuscript chapter id before merging.",
+                    }
+                )
+        else:
+            warnings.append(
+                {
+                    "topic": "chapter_id_check_skipped",
+                    "evidence": f"Missing {chapter_path.as_posix()} so chapter-id consistency not verified.",
+                    "suggestion": "Generate manuscript and re-run QA.",
+                }
+            )
 
     characters_path = root / "canon" / "characters" / "characters.yaml"
     known_names = _extract_character_names(read_text(characters_path) if characters_path.exists() else "")
@@ -323,6 +393,14 @@ def main() -> int:
         report_lines.append("- (none)")
 
     report_lines.append("")
+    report_lines.append("## Body Length")
+    if body_chars is None:
+        report_lines.append("- body_chars: N/A")
+    else:
+        report_lines.append(f"- body_chars: {body_chars}")
+        report_lines.append("- min_required: 3000")
+
+    report_lines.append("")
     report_lines.append("## Open Loop Verification")
     report_lines.append(f"- planned_advances: {planned}")
     report_lines.append(f"- chapter_plan_path: {plan_path.as_posix()}")
@@ -334,7 +412,7 @@ def main() -> int:
     report_lines.append("1) Fix missing artifacts (chapter_plan / manuscript / summary / patch).")
     report_lines.append("2) Ensure chapter_plan advances >=2 open_loops and cites their ids.")
     report_lines.append("3) Update summary + state_patch so each planned loop id is explicitly present.")
-    report_lines.append(f"4) Re-run: `python tools/continuity_checks.py --date {args.date} --chapter {args.chapter}`")
+    report_lines.append(f"4) Re-run: `python tools/continuity_checks.py --date {args.date} --chapter {chap}`")
 
     safe_write_text(qa_path, "\n".join(report_lines) + "\n", backup=True)
     log.info("wrote qa report: %s (result=%s)", qa_path.as_posix(), qa_result)
@@ -343,4 +421,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

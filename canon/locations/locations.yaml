@@ -1,166 +1,81 @@
-schema:
-  - id
-  - name
-  - type
-  - tags
-  - atmosphere
-  - key_objects
-  - rules
-  - connected_to
-
 locations:
-  - id: loc_chengzhongcun
-    name: 海禾城中村
-    type: urban_village
-    tags: [雨季, 拥挤, 宗族, 灰色经济]
-    atmosphere: 雨水顺着电线滴落，巷子窄、灯牌闪烁，湿气里混着油烟与霉味
-    key_objects: [巷口栏杆, 监控盲区, 共享雨棚]
-    rules:
-      - 夜间临时封控不定时升级，出入需“熟面孔/通行证”
-      - 口粮与救助物资在此被二次分配，信息差极大
-      - 任何冲突都容易被“规矩/面子/宗族”放大
-    connected_to: [loc_market, loc_village_committee, loc_clan_hall, loc_police_station]
-
-  - id: loc_delivery_station
-    name: 飞骑外卖站点
-    type: workplace
-    tags: [外卖, 订单, 充电, 临时通知]
-    atmosphere: 雨衣一排排挂着滴水，手机提示音此起彼伏，焦虑被算法放大
-    key_objects: [充电排插, 保温箱, 站长公告栏]
-    rules:
-      - 雨季与封控期间订单与路线频繁变更
-      - 站点口头通知往往比官方公告更快
-      - 迟到/差评会直接影响收入与生存
-    connected_to: [loc_chengzhongcun, loc_cbd, loc_market]
-
   - id: loc_lin_home
-    name: 林家租屋（顶楼小单间）
-    type: home
-    tags: [逼仄, 漏雨, 家庭压力]
-    atmosphere: 墙皮起泡，雨点敲铁皮窗，屋里永远有股潮味
-    key_objects: [塑料桶接水, 旧风扇, 一叠收据]
+    name: 林家土院
+    atmosphere: "土墙低矮，粮缸见底，灶火微弱"
     rules:
-      - 屋内储粮有限，情绪与冲突容易被放大
-      - 任何外来敲门都可能带来风险或机会
-    connected_to: [loc_chengzhongcun, loc_xu_home]
+      - "夜间不得随意外出"
+      - "粮食按人分配，禁止私藏"
 
-  - id: loc_xu_home
-    name: 许家门口楼道
-    type: home
-    tags: [邻里, 监视, 流言]
-    atmosphere: 楼道昏暗潮湿，鞋架杂乱，细碎的家常话像刀子一样划人
-    key_objects: [猫眼, 楼道小凳, 旧收音机]
+  - id: loc_village_lane
+    name: 村口巷道
+    atmosphere: "尘土飞扬，风沙裹着饥饿的议论"
     rules:
-      - 这里的“消息”比新闻更早抵达
-      - 说错一句话会被迅速传播并变形
-    connected_to: [loc_lin_home, loc_chengzhongcun]
+      - "白日可通行，夜里需报备"
+
+  - id: loc_fields
+    name: 村外旱地
+    atmosphere: "地皮干裂，庄稼萎黄"
+    rules:
+      - "轮作与抢墒必须按村约"
+
+  - id: loc_water_point
+    name: 老井水点
+    atmosphere: "井绳磨损，水量忽涨忽落"
+    rules:
+      - "每日取水限量"
+      - "不得私自改井"
+
+  - id: loc_hills
+    name: 山林河沟
+    atmosphere: "荒草丛生，柴薪与野菜稀少"
+    rules:
+      - "采集需排队登记"
 
   - id: loc_market
-    name: 东港集市
-    type: market
-    tags: [物价, 传闻, 交易, 纠纷]
-    atmosphere: 雨棚下吵闹拥挤，菜叶带泥，价签被水打湿又贴回去
-    key_objects: [小秤, 价签, 临时巡查点]
+    name: 乡集
+    atmosphere: "人声嘈杂，物价日涨"
     rules:
-      - 价格随消息波动，囤货与抢购引发冲突
-      - 巡查时段会临时清场或限购
-    connected_to: [loc_chengzhongcun, loc_grain_warehouse, loc_relief_point]
-
-  - id: loc_village_committee
-    name: 村委/里正办公室
-    type: government
-    tags: [分配, 通行, 名单, 稳定]
-    atmosphere: 空调很冷，墙上标语很热，文件夹整齐得像一排刀刃
-    key_objects: [公章, 名单夹, 临时通行证]
-    rules:
-      - 资源分配以“名单/证明/关系”三者共同决定
-      - 任何投诉都可能被引导到“维稳”框架里处理
-    connected_to: [loc_chengzhongcun, loc_police_station, loc_relief_point]
+      - "赊账必须有人担保"
 
   - id: loc_clan_hall
-    name: 林氏祠堂
-    type: shrine
-    tags: [宗族, 规矩, 祭祀, 调解]
-    atmosphere: 香火味混着潮木味，门槛被踩得发亮，低声议论像潮水
-    key_objects: [族谱, 木印章, 供桌]
+    name: 祠堂
+    atmosphere: "香火冷清，族规悬挂"
     rules:
-      - “家丑不外扬”是硬规矩，公开对抗会遭集体压力
-      - 调解优先于报警，但代价往往落在弱者身上
-    connected_to: [loc_chengzhongcun, loc_village_committee]
+      - "族规决定地界与分配"
 
-  - id: loc_police_station
-    name: 派出所（衙门）
-    type: police
-    tags: [治安, 询问, 程序, 封控]
-    atmosphere: 白炽灯刺眼，雨披堆在角落，记录本一页页翻得像审判
-    key_objects: [询问室, 值班台, 公告栏]
+  - id: loc_headman_home
+    name: 里正家
+    atmosphere: "门庭紧闭，出入有差役"
     rules:
-      - 以程序与证据为准，但会受“稳定”目标影响优先级
-      - 夜间出入与聚集会被重点关注
-    connected_to: [loc_village_committee, loc_chengzhongcun, loc_bridge]
+      - "非召不得入"
 
-  - id: loc_grain_warehouse
-    name: 周记粮仓
-    type: warehouse
-    tags: [囤货, 账本, 运输, 危险]
-    atmosphere: 铁门锈水往下流，仓内干燥得不正常，空气里有粉尘味
-    key_objects: [铁门锁, 叉车, 账本柜]
+  - id: loc_neighbor_home
+    name: 许家院
+    atmosphere: "冷嘲热讽四处传"
     rules:
-      - 进出受严格控制，夜间更敏感
-      - 任何“盘点/查账”都会引发反弹
-    connected_to: [loc_market, loc_bridge, loc_village_committee]
+      - "邻里纠纷易被放大"
 
-  - id: loc_river_canal
-    name: 排水渠与取水点
-    type: water_source
-    tags: [雨季, 水患, 污染, 线索]
-    atmosphere: 水流浑浊，漂着杂物，雨声盖过争吵，危险被隐藏在水面下
-    key_objects: [临时沙袋, 破损井盖, 水位刻度]
+  - id: loc_county_gate
+    name: 县城口
+    atmosphere: "盘查严格，行人寥落"
     rules:
-      - 水位变化决定封控与通行
-      - 水源可能污染，谣言与恐慌传播极快
-    connected_to: [loc_chengzhongcun, loc_farmland, loc_bridge]
+      - "无路引不得进城"
 
-  - id: loc_farmland
-    name: 近郊菜地与棚区
-    type: farmland
-    tags: [农时, 供应, 偷采, 抢地]
-    atmosphere: 泥泞、湿冷，塑料棚啪啪作响，作物被雨打得东倒西歪
-    key_objects: [塑料棚, 水泵, 简易工具房]
+  - id: loc_yamen_outer
+    name: 县衙外围
+    atmosphere: "差役巡走，公告张贴"
     rules:
-      - 产出受农时与天气限制，短期无法凭意志“增产”
-      - 工具/化肥/燃料短缺会直接压低产量
-    connected_to: [loc_river_canal, loc_market]
-
-  - id: loc_cbd
-    name: 海禾CBD雨幕高楼群
-    type: cbd
-    tags: [对比, 玻璃, 秩序, 冷漠]
-    atmosphere: 玻璃幕墙反射灰天，雨伞像黑点移动，秩序干净但疏离
-    key_objects: [写字楼大堂, 地下通道, 安检闸机]
-    rules:
-      - 安检与登记更严格，陌生面孔更容易被拦
-      - 信息公开但不透明：公告多，解释少
-    connected_to: [loc_delivery_station, loc_bridge]
+      - "民众只能在外等候"
 
   - id: loc_relief_point
-    name: 赈灾物资发放点
-    type: relief
-    tags: [排队, 名单, 摩擦, 希望]
-    atmosphere: 队伍在雨里拉长，塑料雨衣窸窣作响，怨气与期待交织
-    key_objects: [登记台, 物资箱, 临时围栏]
+    name: 赈灾点
+    atmosphere: "队伍漫长，怨声四起"
     rules:
-      - 物资按“名单+时段”发放，错过即视为放弃
-      - 现场冲突会被迅速以治安名义处理
-    connected_to: [loc_village_committee, loc_market]
+      - "按名册领取"
+      - "不得代领"
 
-  - id: loc_bridge
-    name: 港湾桥与检查卡口
-    type: checkpoint
-    tags: [卡口, 通行, 盘查, 运输]
-    atmosphere: 雨幕下红蓝灯闪烁，水汽把人脸糊成一团，车辆一辆辆挪
-    key_objects: [路障, 临检岗亭, 反光锥桶]
+  - id: loc_grain_shop
+    name: 粮铺
+    atmosphere: "门口排队，柜台冷硬"
     rules:
-      - 关键时段限行，货车优先级取决于“证明/关系”
-      - 盘查以临时口径为准，规则会随消息变
-    connected_to: [loc_police_station, loc_grain_warehouse, loc_river_canal, loc_cbd]
+      - "现银优先"

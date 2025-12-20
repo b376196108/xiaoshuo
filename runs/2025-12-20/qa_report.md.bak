@@ -1,0 +1,28 @@
+QA_RESULT: FAIL
+
+# QA Report — 2025-12-20 — ch001
+
+## Hard Failures
+- rule: artifact_missing: manuscript
+  evidence: Missing E:/Lianghuagit/xiaoshuo/manuscript/ch001.md
+  fix: Generate `manuscript/chNNN.md` first.
+- rule: artifact_missing: chapter_plan
+  evidence: Missing E:/Lianghuagit/xiaoshuo/runs/2025-12-20/chapter_plan.md
+  fix: Generate `runs/YYYY-MM-DD/chapter_plan.md` before QA.
+
+## Warnings
+- topic: chapter_id_check_skipped
+  evidence: Missing E:/Lianghuagit/xiaoshuo/manuscript/ch001.md so chapter-id consistency not verified.
+  suggestion: Generate manuscript and re-run QA.
+
+## Open Loop Verification
+- planned_advances: []
+- chapter_plan_path: E:/Lianghuagit/xiaoshuo/runs/2025-12-20/chapter_plan.md
+- summary_path: E:/Lianghuagit/xiaoshuo/recap/chapter_summaries/ch001.md
+- state_patch_path: E:/Lianghuagit/xiaoshuo/state/state_patch.json
+
+## Recommended Rework Steps (if FAIL)
+1) Fix missing artifacts (chapter_plan / manuscript / summary / patch).
+2) Ensure chapter_plan advances >=2 open_loops and cites their ids.
+3) Update summary + state_patch so each planned loop id is explicitly present.
+4) Re-run: `python tools/continuity_checks.py --date 2025-12-20 --chapter ch001`

@@ -1,0 +1,29 @@
+# Human-readable mirror of `inputs/project_brief.json` (system of record is JSON).
+# All values below are defaults and can be changed.
+project:
+  genre: 都市悬疑
+  tone: 写实、紧张、克制
+  rating: 大众向；不露骨；暴力描写克制
+  hook: 一个外卖员在同一天循环三次，逼近一桩失踪案真相
+  theme: 选择与代价
+  setting_anchor: 当代沿海城市；雨季；城中村与CBD并存
+  protagonist_keywords:
+    - 外卖员
+    - 敏感
+    - 嘴硬心软
+    - 欠债
+    - 想翻身
+  scale:
+    total_chapters: 60
+    words_per_chapter: 2500
+constraints:
+  must_have:
+    - 每章结尾留钩子
+    - 至少推进2个伏笔
+    - 节奏紧凑
+  must_avoid:
+    - 跳POV
+    - 无意义旁白
+    - AI/系统提示痕迹
+    - 金手指过强
+random_seed: 20251219

@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "current_chapter": "ch001"
+  },
+  "characters": {
+    "lin_cen": {
+      "status": "已确立定量省柴方案并以野菜闷粥暂止饥，井边受辱后压下冲突，知晓明卯点名与井水可能有问题"
+    },
+    "lin_guozhu": {
+      "status": "被差役夜里点名，明卯需到衙外围集合，徭役压力逼近"
+    },
+    "chen_shuying": {
+      "status": "担忧流言扩散，提醒家人隐匿新法"
+    },
+    "du_guilan": {
+      "status": "咳嗽稍缓但仍体弱"
+    }
+  },
+  "open_loops": [
+    {
+      "id": "loop_food_shortage",
+      "status": "progressed",
+      "note": "定量刻线与浸泡闷煮配合野菜焯水仅缓解当晚饥饿，粮源仍缺"
+    },
+    {
+      "id": "loop_neighbor_sabotage",
+      "status": "progressed",
+      "note": "许文淑井边插队并散布林家藏粮占水谣言，流言扩散"
+    },
+    {
+      "id": "loop_labor_levy",
+      "status": "progressed",
+      "note": "差役夜里上门点名，明卯时需集合"
+    }
+  ]
+}

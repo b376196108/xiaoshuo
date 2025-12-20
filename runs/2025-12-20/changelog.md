@@ -1,0 +1,5 @@
+- Updated: manuscript/ch001.md (expanded to >=3200 chars)
+- Regenerated: chapter summary / rolling recap / state_patch
+- Open loops progressed: loop_food_shortage, loop_neighbor_sabotage, loop_labor_levy
+- Hook: 差役夜里点名，明卯必须报到，赈灾名额受压
+- synced_at: 2025-12-20T10:37:41

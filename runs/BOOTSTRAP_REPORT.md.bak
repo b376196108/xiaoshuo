@@ -1,11 +1,15 @@
 # BOOTSTRAP_REPORT
 
-- generated_at_utc: 2025-12-19T06:10:52Z
-- repo_root: F:/Lianghuagit/xiaoshuo
-- codex_cli_detected: False
+- generated_at_utc: 2025-12-19T13:27:57Z
+- repo_root: E:/Lianghuagit/xiaoshuo
+- codex_cli_detected: True
 
 ## Directory Check
-- RESULT: PASS
+- RESULT: FAIL
+- missing: `state/backups/`
+- missing: `recap/chapter_summaries/`
+- missing: `manuscript/`
+- missing: `logs/`
 
 ## File Check
 - RESULT: PASS

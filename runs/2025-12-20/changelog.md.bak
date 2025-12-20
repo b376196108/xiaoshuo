@@ -1,0 +1,5 @@
+- 新增 `recap/chapter_summaries/ch001.md`：记录饥荒开局、毒舌邻居挑衅与夜里点名钩子。
+- 更新 `recap/rolling_recap.md`：补齐主线事实、情绪走向与未解伏笔总览。
+- 新增 `state/state_patch.json`：更新人物状态与徭役压力。
+- open_loops：loop_food_shortage/loop_neighbor_sabotage/loop_labor_levy 标记 progressed。
+- 结尾钩子：危机升级（明卯时点名集合）。

@@ -1,7 +1,7 @@
 # BOOTSTRAP_REPORT
 
-- generated_at_utc: 2025-12-19T06:25:55Z
-- repo_root: F:/Lianghuagit/xiaoshuo
+- generated_at_utc: 2025-12-20T01:43:55Z
+- repo_root: E:/Lianghuagit/xiaoshuo
 - codex_cli_detected: True
 
 ## Directory Check
@@ -16,6 +16,9 @@
 
 ## Python Compile Check
 - `python -m compileall tools`: PASS
+
+## Chapter Title Check
+- RESULT: PASS
 
 ## Directory Tree (top)
 - `inputs/` (edit `inputs/project_brief.json`)
