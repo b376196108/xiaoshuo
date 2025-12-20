@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "current_chapter": "ch001"
+  },
+  "characters": {
+    "lin_cen": {
+      "location": "loc_lin_home",
+      "status": "被点名在即，先以忍让换取时间"
+    },
+    "lin_guozhu": {
+      "location": "loc_lin_home",
+      "status": "名册压力下情绪紧绷"
+    }
+  },
+  "open_loops": [
+    {
+      "id": "loop_food_shortage",
+      "status": "progressed",
+      "description": "林家余粮见底，需尽快找到稳定口粮",
+      "note": "已按人头定量并用闷煮省柴法暂时度过当日",
+      "planned_payoff_window": "ch001-ch010"
+    },
+    {
+      "id": "loop_neighbor_sabotage",
+      "status": "active",
+      "description": "许文淑借流言与占便宜施压林家",
+      "note": "巷道当众挑衅并放话名册今晚点名",
+      "planned_payoff_window": "ch001-ch010"
+    },
+    {
+      "id": "loop_labor_levy",
+      "status": "active",
+      "description": "名册与徭役压力落到林家",
+      "note": "里正确认今晚送册、明早点名，林家答应用柴与劳力换缓口",
+      "planned_payoff_window": "ch001-ch020"
+    }
+  ]
+}

@@ -1,2 +1,3 @@
-2025-12-20 08:29:02,987Z [INFO] date=2025-12-20 chapter=ch001 target_words=2500
-2025-12-20 08:29:03,277Z [WARNING] codex not available; manual instructions written: E:/Lianghuagit/xiaoshuo/runs/2025-12-20/manual_codex_instructions.md
+2025-12-20 15:59:09,386Z [INFO] date=2025-12-20 chapter=ch001 target_words=3200
+2025-12-20 15:59:09,590Z [WARNING] codex not available; manual instructions written: E:/Lianghuagit/xiaoshuo/runs/2025-12-20/manual_codex_instructions.md
+2025-12-20 15:59:09,591Z [WARNING] AutoTitle skipped: missing file E:/Lianghuagit/xiaoshuo/runs/2025-12-20/chapter_plan.md

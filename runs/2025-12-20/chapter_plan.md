@@ -1,41 +1,45 @@
-# Chapter Plan - ch001
+# 章纲 - ch001
 
-chapter_id: ch001
-target_words: 2500
-chapter_goals:
-- 穿越醒来：从“陌生身体+饥饿眩晕”切入，立起饥荒现实
-- 家庭困境具象化：断粮与病弱/孩子挨饿至少命中两项，点出“今天不解决就出事”的紧迫
-- 毒舌邻居首挑衅：许文淑登场挑衅并与主角第一次正面交锋（主角先吃亏）
-- 本章爽点：主角落地一个“当天可见效”的节粮/止饿改良，今晚能吃上像样的东西，但要付代价
-- 结尾钩子：危机升级（徭役名册/差役点名）逼迫下一章行动
-pov_lock: 第三人称限知（主角：林岑）
-timeline_anchor: 乾元九年二月
+- chapter_id: ch001
+- target_words: 3200
+- chapter_title: 《名册夜逼上门》
+- chapter_goals:
+  - 确认穿越处境与粮荒底线，做出本章第一步活命决策
+  - 推进 loop_food_shortage：评估存粮并建立当日可执行的节粮方案
+  - 推进 loop_toxic_neighbor：毒舌邻居主动挑衅，主角首次交锋但先吃小亏
+  - 落地一个当天见效的小爽点并付出代价（节柴省粮的煮粥法）
+- pov_lock: 第三人称限知（主角：林岑）
+- timeline_anchor: 乾元九年二月初三清晨（春寒未退、旱荒加剧；作为故事开局时间锚）
 
-## One-Sentence Goal
-- 林岑在饥荒与家庭濒临断粮的压力下立刻盘点口粮、争取当晚止饿，同时被毒舌邻居挑衅并迎来徭役名册的危机升级。
+## Open Loops 推进
+- loop_food_shortage：家中断粮压力坐实，明确“余粮撑两三日”的事实并提出节粮方案。
+- loop_toxic_neighbor：毒舌邻居当众挖苦占便宜，主角先忍让吃亏，为后续反制埋钩。
 
 ## Open Loops
 - advance:
-  - {id: loop_food_shortage, starting_state: 粮缸见底且家人虚弱, action: 盘点口粮并制定当日定量方案+节柴闷煮, new_information: 仅够撑两顿且必须尽快找稳定粮源, resulting_state: 短期止饿但口粮危机更紧, summary_evidence: 粮缸见底+定量刻线+当晚稠粥}
-  - {id: loop_neighbor_sabotage, starting_state: 邻里已有闲话, action: 井边/路上许文淑挑衅并散布“林家藏粮/占水”谣言, new_information: 流言可能影响赈灾名册与徭役选择, resulting_state: 公开对立开端, summary_evidence: 井边争执+邻居放话}
-  - {id: loop_labor_levy, starting_state: 徭役名册将下发, action: 里正口风+差役现身透露名册将贴并点名, new_information: 林家可能被点名且需次日集合, resulting_state: 徭役压力逼近, summary_evidence: 差役到村+口头点名}
+  - id: loop_food_shortage
+    starting_state: 林家粮缸见底，具体余粮不清
+    action: 林岑清点存粮并提出按人头定量、浸泡淘洗与闷煮节柴的方案
+    new_information: 家中余粮最多撑两三日，必须立刻寻找替代口粮
+    resulting_state: progressed
+    summary_evidence: 量粮分配、试做稀粥并记录可节省柴火
+  - id: loop_toxic_neighbor
+    starting_state: 许文淑盯上林家，伺机挑事
+    action: 许文淑当众挖苦并借机占便宜，林岑忍让却记下对方手段
+    new_information: 许文淑借流言挟迫，邻里对林家指指点点
+    resulting_state: active
+    summary_evidence: 巷道口对喷与流言种子埋下
 - new_optional: null
-
-## Escalation Plan
-- misbelief_or_reversal: 以为靠省粮能多撑几天，但流言与名册让“今日省下的口粮”变成明日被抓丁的代价
-- cost_or_consequence: 家中用掉最后的盐/柴，且父亲被差役盯上，家庭安全感下降
-- ending_hook_type: crisis_escalation
-- ending_hook_payload: 差役夜里点名，明日卯时必须报到，若不到将连累赈灾资格
 
 ## Scene List
 - scenes:
-  - {no: 1, setting: 林家土屋内（loc_lin_home）, cast: 林岑/陈淑英/杜桂兰/林小棠/林小河, objective: 立刻确认生存处境并稳住家人, conflict: 饥饿眩晕+粮缸见底+孩子挨饿, reveal: 行动=用现代“清单+定量”思路盘点口粮并在碗上刻线定量, escalation: 代价=份额太少引发家人不满且林岑言行显得异常, exit_hook: 父亲从田里回来带来坏消息, words: 360}
-  - {no: 2, setting: 院里与灶间, cast: 林岑/林国柱/陈淑英, objective: 说服父亲接受当日止饿方案, conflict: 父亲体力透支+柴火不足+对“新法”不信, reveal: 行动=提出“浸泡粗粮+闷煮余热”省柴法并量化分粥, escalation: 代价=需要额外取水与占用灶口时间，父亲勉强点头但心生戒备, exit_hook: 需要去井边取水, words: 420}
-  - {no: 3, setting: 村口老井, cast: 林岑/陈淑英/杜桂兰/许文淑/村民, objective: 取到够用的清水并避开冲突, conflict: 许文淑插队抢水并阴阳怪气造谣, reveal: 行动=用“沉淀+布过滤”挑清水并当场解释水变浑原因, escalation: 代价=仍被邻居压一头且流言扩散，第一次正面对冲先吃亏, exit_hook: 村道上传来里正与差役的动静, words: 420}
-  - {no: 4, setting: 里正家门口/村道, cast: 林岑/林国柱/叶守正/何开军/许文淑(旁观), objective: 打探徭役名册规则与时间, conflict: 里正含糊其辞+差役不耐烦+流言影响态度, reveal: 行动=用现代“时间节点+流程清单”提问获取名册张贴与集合时间, escalation: 代价=差役记住林家且父亲更焦虑, exit_hook: 必须今晚先让家人吃上东西, words: 400}
-  - {no: 5, setting: 林家灶间（傍晚）, cast: 林岑/陈淑英/林小棠/林小河/杜桂兰, objective: 把当晚一顿做成“能顶饿”的小成果, conflict: 粮少水浑柴紧, reveal: 行动=按刻线定量+粗粮先泡后闷+野菜焯水去涩, escalation: 代价=用掉最后的盐/柴并暴露“懂法子”引来家人担忧, exit_hook: 刚端上粥就传来门外急促敲门声, words: 450}
-  - {no: 6, setting: 林家门口（夜）, cast: 林岑/林国柱/陈淑英/何开军或差役/许文淑, objective: 稳住局面争取缓冲, conflict: 差役点名上门，口气强硬, reveal: 行动=林岑冷静确认名册与集合时间并尝试争取延期, escalation: 代价=对方拒绝且明确“明日卯时报到”，危机升级, exit_hook: 差役留下最后通牒，家人惶然, words: 450}
+  - {no: 1, setting: "林家土院(loc_lin_home)", cast: "林岑(lin_cen)、陈淑英(chen_shuying)、杜桂兰(du_guilan)、林小棠(lin_xiaotang)", objective: "确认家中粮食与当日口粮底线", conflict: "粮缸见底，家人各执一词：卖工具还是节口", reveal: "余粮不足数日，赈粮名册又将下发", escalation: "林岑提出按量分粮与节柴煮粥方案但遭质疑", exit_hook: "决定白天去巷道与山沟找食并探名册消息"}
+  - {no: 2, setting: "村口巷道(loc_village_lane)", cast: "林岑(lin_cen)、许文淑(xu_wenshu)、林小河(lin_xiaohe)", objective: "打听名册消息并借口换取一点盐柴", conflict: "许文淑当众挖苦并趁机占便宜", reveal: "她暗示名册今晚送达且里正偏向她", escalation: "林岑被迫退让一次，名声受损", exit_hook: "听到‘今晚点名’传言，危机逼近"}
+  - {no: 3, setting: "山林河沟(loc_hills)", cast: "林岑(lin_cen)、林小河(lin_xiaohe)", objective: "寻找可食野菜补口粮", conflict: "可食野菜稀少且需登记，巡查脚步逼近", reveal: "林岑用现代识别法避开毒草并找到一小片可食植物", escalation: "为躲巡查绕路，耗时且露出行踪", exit_hook: "听见有人议论徭役名册已在路上"}
+  - {no: 4, setting: "林家灶间(loc_lin_home)", cast: "林岑(lin_cen)、陈淑英(chen_shuying)、杜桂兰(du_guilan)", objective: "把野菜与余粮做成能顶饱的当日饭", conflict: "柴火紧缺且老人担心新法伤身", reveal: "先浸泡淘洗、灰水去涩再闷煮，粥更稠更省柴", escalation: "代价是耗掉半捆柴并暴露新做法", exit_hook: "邻居孩子看见冒烟的锅，风声可能传开"}
+  - {no: 5, setting: "里正家门口(loc_headman_home)", cast: "林岑(lin_cen)、林国柱(lin_guozhu)、叶守正(ye_shouzheng)", objective: "确认名册动向并争取缓期", conflict: "里正要人情或劳力才肯通融", reveal: "名册与赈粮绑定，今晚必送到户", escalation: "林岑被迫允诺送柴或出力换取缓口", exit_hook: "里正放话：今晚点名，早做准备"}
+  - {no: 6, setting: "林家门外(loc_lin_home)", cast: "林岑(lin_cen)、陈淑英(chen_shuying)、许文淑(xu_wenshu)、差役(he_kaijun)", objective: "撑到夜里并等名册结果", conflict: "差役敲门，邻居旁观添油加醋", reveal: "名册点名落到林家，赈粮资格与徭役风险并至", escalation: "一旦应下就要付出劳力与名声代价", exit_hook: "门一开，名册上的名字刺眼亮出"}
 
 ## Ending Hook
 - type: crisis_escalation
-- payload: 差役夜里点名，林国柱被要求次日卯时到衙外围集合，若不到将影响赈灾资格，逼迫下一章立即应对。
+- payload: 名册夜里逼上门，林家被点名，赈粮与徭役的代价同时压下来

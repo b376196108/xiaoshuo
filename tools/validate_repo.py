@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import compileall
+import re
 from pathlib import Path
 
 from _common import (
@@ -8,7 +9,6 @@ from _common import (
     is_codex_available,
     load_json,
     now_utc_iso,
-    parse_chapter_num_from_id,
     read_text,
     safe_write_text,
 )
@@ -103,17 +103,11 @@ def _check_chapter_titles(root: Path) -> list[str]:
         if lines[0].strip() != expected_first:
             warnings.append(f"{path.as_posix()}: first line should be '{expected_first}'")
 
-        if len(lines) > 1 and lines[1].strip().startswith("##"):
-            chapter_num = parse_chapter_num_from_id(chap_id)
-            if chapter_num is None:
-                if not lines[1].strip().startswith("## 第"):
-                    warnings.append(f"{path.as_posix()}: second line should match '## 第N章：...'")
-            else:
-                expected_prefix = f"## 第{chapter_num}章："
-                if not lines[1].strip().startswith(expected_prefix):
-                    warnings.append(
-                        f"{path.as_posix()}: second line should start with '{expected_prefix}'"
-                    )
+        title_line = lines[1].strip() if len(lines) > 1 else ""
+        if not title_line:
+            warnings.append(f"{path.as_posix()}: second line should be '## 《章节标题》'")
+        elif not re.match(r"^##\s+《.+》\s*$", title_line):
+            warnings.append(f"{path.as_posix()}: second line should match '## 《章节标题》'")
 
     return warnings
 

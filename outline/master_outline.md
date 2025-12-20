@@ -1,7 +1,7 @@
 # Master Outline
 
 - Total chapters: 80
-- Target words per chapter: ~2500
+- Target words per chapter: ~3000
 - Theme: 现代中国人穿越到饥荒年的农家小人物身上，靠知识与执行力种田养家致富逆袭
 - Setting anchor: 架空王朝北方旱灾饥荒年，村落资源紧缺，赈灾与徭役并存
 

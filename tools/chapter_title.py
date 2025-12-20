@@ -54,6 +54,7 @@ _STOP_CHARS = set(
 )
 
 _CJK_RE = re.compile(r"[\u4e00-\u9fff]")
+_TITLE_FIELD_RE = re.compile(r"^(?:-\\s*)?chapter_title\\s*[:：]\\s*(.+)$", re.IGNORECASE)
 
 
 def chapter_no_from_id(chapter_id: str) -> int:
@@ -64,7 +65,8 @@ def chapter_no_from_id(chapter_id: str) -> int:
 
 
 def format_chapter_heading(chapter_id: str, title: str = "{title}") -> str:
-    return f"## 第{chapter_no_from_id(chapter_id)}章：{title}"
+    _ = chapter_id
+    return f"## 《{_clean_title(title)}》"
 
 
 def generate_chapter_title(
@@ -75,6 +77,9 @@ def generate_chapter_title(
     project_brief: dict,
 ) -> str:
     _ = (chapter_id, project_brief)  # reserved for future heuristics
+    explicit = _extract_explicit_title(plan_text)
+    if explicit:
+        return explicit
     primary_terms = _extract_priority_terms(plan_text)
     if not primary_terms and summary_text:
         primary_terms = _extract_keywords(summary_text)
@@ -102,6 +107,16 @@ def _extract_priority_terms(text: str) -> list[str]:
     return _extract_keywords("\n".join(segments))
 
 
+def _extract_explicit_title(plan_text: str) -> str:
+    for line in plan_text.splitlines():
+        match = _TITLE_FIELD_RE.match(line.strip())
+        if match:
+            value = match.group(1).strip()
+            if value:
+                return _clean_title(value)
+    return ""
+
+
 def _extract_keywords(text: str) -> list[str]:
     hits = [kw for kw in _DOMAIN_KEYWORDS if kw in text]
     return hits
@@ -115,6 +130,13 @@ def _sample_text_for_keywords(text: str) -> str:
         return text
     third = max(1, n // 3)
     return text[:third] + "\n" + text[-third:]
+
+
+def _clean_title(title: str) -> str:
+    cleaned = title.strip()
+    if cleaned.startswith("《") and cleaned.endswith("》") and len(cleaned) >= 2:
+        cleaned = cleaned[1:-1].strip()
+    return cleaned
 
 
 def _top_bigrams(text: str, *, limit: int = 6) -> list[str]:

@@ -24,3 +24,82 @@ FINAL_RESULT: PASS
 - run_daily target_words clamp: <3000 -> 3200
 - drafter prompt: body >=3000 chars, no filler padding
 - self_check: compileall PASS; validate_repo PASS
+
+## Artifact Sync QA Update
+- appended_at_utc: 2025-12-20T03:03:40Z
+- ?? OutOfSync ???mtime ?????
+- ?? resync_instructions.md ??????????????
+- self_check: compileall PASS; validate_repo PASS; continuity_checks PASS
+
+## One-Click Prepare Update
+- appended_at_utc: 2025-12-20T03:40:24Z
+- ?? auto_goals??? open_loops ?????????? 3?6 ? chapter_goals
+- create_daily_run?????????manuscript vs state ??????? goals ?? TBD ???
+- prepare_next_run????? brief/context_pack/manual ????? target_words >=3200
+
+## ????????
+- manual ????????????+??+?????
+- ????????????Step1/Step2/Step3?
+- ?????????
+- ???python -m compileall tools / python tools/validate_repo.py
+
+## QA ?????????????
+- QA ?????????? QA_RESULT: PASS/FAIL?
+- chapter_id_mismatch ??? state/state_patch.json ??
+- current_state ????????????? FAIL
+- resync_instructions.md ????????????
+- ???python -m compileall tools / python tools/validate_repo.py
+
+## ???????????
+- ?? tools/run_daily.py?????????? + ???? + ????? + ????
+- ?? tools/continuity_checks.py?QA ????? + ???/??????chapter_plan/changelog?
+- ?? prompts/roles/chapter_planner.md?prompts/roles/archivist.md??????????
+- ?? scripts/prepare_next.bat?chcp 65001 + PYTHONUTF8=1
+- ???python -m compileall tools / python tools/validate_repo.py / python tools/continuity_checks.py --date 2025-12-21 --chapter ch002
+
+## ???????
+- ??/???scripts/prepare_next.bat?scripts/README.md?tools/doctor.py???????.md
+- ????:
+  - python tools/doctor.py: OK: doctor pass
+  - python tools/validate_repo.py: ?????
+
+## 章节标题一致性增强
+- 变更摘要：
+  - prompts/roles/chapter_planner.md：新增 chapter_title/alt_titles 输出要求与标题规则。
+  - prompts/roles/drafter.md：固定第二行标题格式 ## 《本章标题》，标题必须来自 chapter_plan。
+  - prompts/roles/line_editor.md：禁止改动标题并在 changelog 记录标题是否变动。
+  - tools/run_daily.py：manual 指令新增 chapter_title 与标题格式要求；AutoTitle 输出 ## 《标题》 并兼容旧格式。
+  - tools/chapter_title.py：优先读取 chapter_title；统一标题格式。
+  - tools/continuity_checks.py：新增 title_missing_or_invalid FAIL；正文长度剔除标题行。
+  - tools/validate_repo.py：标题格式校验更新为 ## 《标题》（WARNING）。
+  - tools/prepare_next_run.py：补充标题要求提示。
+- 自检命令输出：
+  - python -m compileall tools：
+`
+Listing 'tools'...
+Compiling 'tools\\chapter_title.py'...
+Compiling 'tools\\continuity_checks.py'...
+Compiling 'tools\\prepare_next_run.py'...
+Compiling 'tools\\run_daily.py'...
+Compiling 'tools\\validate_repo.py'...
+`
+  - python tools/validate_repo.py：无输出，退出码 0
+
+## 自检补充（标题正则修正后）
+- python -m compileall tools：
+`
+Listing 'tools'...
+Compiling 'tools\\validate_repo.py'...
+`
+- python tools/validate_repo.py：无输出，退出码 0
+
+## manual_codex_instructions 标题规则增强
+- 变更摘要：
+  - tools/run_daily.py：Step1/Step2/Step3 与复制粘贴块新增章节标题硬规则（chapter_title/alt_titles、正文第二行格式、摘要首行格式）。
+- 自检命令输出：
+  - python -m compileall tools：
+`
+Listing 'tools'...
+Compiling 'tools\\run_daily.py'...
+`
+  - python tools/validate_repo.py：无输出，退出码 0

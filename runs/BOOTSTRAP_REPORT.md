@@ -1,6 +1,6 @@
 # BOOTSTRAP_REPORT
 
-- generated_at_utc: 2025-12-20T01:43:55Z
+- generated_at_utc: 2025-12-20T10:02:43Z
 - repo_root: E:/Lianghuagit/xiaoshuo
 - codex_cli_detected: True
 
@@ -18,7 +18,8 @@
 - `python -m compileall tools`: PASS
 
 ## Chapter Title Check
-- RESULT: PASS
+- RESULT: WARNING
+- WARNING: E:/Lianghuagit/xiaoshuo/manuscript/ch001.md: second line should be '## 《章节标题》'
 
 ## Directory Tree (top)
 - `inputs/` (edit `inputs/project_brief.json`)

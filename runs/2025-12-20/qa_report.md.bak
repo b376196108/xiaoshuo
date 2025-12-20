@@ -1,28 +1,61 @@
 QA_RESULT: FAIL
 
-# QA Report — 2025-12-20 — ch001
+# QA 报告 — 2025-12-20 — ch001
 
-## Hard Failures
-- rule: artifact_missing: manuscript
-  evidence: Missing E:/Lianghuagit/xiaoshuo/manuscript/ch001.md
-  fix: Generate `manuscript/chNNN.md` first.
-- rule: artifact_missing: chapter_plan
-  evidence: Missing E:/Lianghuagit/xiaoshuo/runs/2025-12-20/chapter_plan.md
-  fix: Generate `runs/YYYY-MM-DD/chapter_plan.md` before QA.
+## 硬失败
+- 规则: artifact_missing: manuscript
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/manuscript/ch001.md
+  修复: 先生成 `manuscript/chNNN.md`。
+- 规则: state_patch_missing_for_chapter_check
+  证据: 缺失或无效：E:/Lianghuagit/xiaoshuo/state/state_patch.json
+  修复: 先执行 Step3（Archivist）生成正确的 state/state_patch.json。
+- 规则: artifact_missing: chapter_plan
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/runs/2025-12-20/chapter_plan.md
+  修复: 先生成 `runs/YYYY-MM-DD/chapter_plan.md`。
+- 规则: artifact_missing: changelog
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/runs/2025-12-20/changelog.md
+  修复: 重跑 Archivist（Step 3）生成 recap/state/changelog 后再 QA。
+- 规则: artifact_missing: chapter_summary
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/recap/chapter_summaries/ch001.md
+  修复: 重跑 Archivist（Step 3）生成 recap/state/changelog 后再 QA。
+- 规则: artifact_missing: state_patch
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/state/state_patch.json
+  修复: 重跑 Archivist（Step 3）生成 recap/state/changelog 后再 QA。
 
-## Warnings
-- topic: chapter_id_check_skipped
-  evidence: Missing E:/Lianghuagit/xiaoshuo/manuscript/ch001.md so chapter-id consistency not verified.
-  suggestion: Generate manuscript and re-run QA.
+## 警告
+- 主题: state_current_chapter_invalid
+  证据: state.meta.current_chapter 无效：'ch000'
+  建议: 确保 `state/current_state.json` 使用如 ch001 的章节编号格式。
+- 主题: timeline_anchor_missing
+  证据: state.meta.in_story_date 为 TBD 或缺失。
+  建议: 设置 ISO 风格的 in_story_date 并保持单调递增；通过 state_patch 更新。
 
-## Open Loop Verification
-- planned_advances: []
-- chapter_plan_path: E:/Lianghuagit/xiaoshuo/runs/2025-12-20/chapter_plan.md
-- summary_path: E:/Lianghuagit/xiaoshuo/recap/chapter_summaries/ch001.md
-- state_patch_path: E:/Lianghuagit/xiaoshuo/state/state_patch.json
+## 章节号一致性
+- 目标章节：ch001
+- state_patch.meta.current_chapter：缺失/无效
+- state.current_state.meta.current_chapter：无效：'ch000'
 
-## Recommended Rework Steps (if FAIL)
-1) Fix missing artifacts (chapter_plan / manuscript / summary / patch).
-2) Ensure chapter_plan advances >=2 open_loops and cites their ids.
-3) Update summary + state_patch so each planned loop id is explicitly present.
-4) Re-run: `python tools/continuity_checks.py --date 2025-12-20 --chapter ch001`
+## 正文字数
+- 正文字符数: 无
+
+## open_loops 校验
+- 章纲标注推进: []
+- 章纲路径: E:/Lianghuagit/xiaoshuo/runs/2025-12-20/chapter_plan.md
+- 摘要路径: E:/Lianghuagit/xiaoshuo/recap/chapter_summaries/ch001.md
+- state_patch 路径: E:/Lianghuagit/xiaoshuo/state/state_patch.json
+
+## 占位符/问号串检测
+- chapter_plan: 缺失
+- changelog: 缺失
+
+## 归档同步
+- 正文: E:/Lianghuagit/xiaoshuo/manuscript/ch001.md | 缺失
+- 章节摘要: E:/Lianghuagit/xiaoshuo/recap/chapter_summaries/ch001.md | 缺失
+- 状态补丁: E:/Lianghuagit/xiaoshuo/state/state_patch.json | 缺失
+- 变更日志: E:/Lianghuagit/xiaoshuo/runs/2025-12-20/changelog.md | 缺失
+
+## 推荐返工步骤（仅 FAIL 时）
+1) 补齐缺失产物（chapter_plan / manuscript / summary / patch）。
+2) 确保章纲推进 >=2 条 open_loops，并明确写出 id。
+3) 更新 summary + state_patch，让每条计划 loop 的 id 明确出现。
+4) 重跑：`python tools/continuity_checks.py --date 2025-12-20 --chapter ch001`

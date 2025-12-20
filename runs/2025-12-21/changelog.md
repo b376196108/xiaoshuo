@@ -1,0 +1,6 @@
+﻿- Updated: recap/chapter_summaries/ch002.md（与正文同步，含 open_loops 推进）
+- Updated: recap/rolling_recap.md（截至 ch002 的滚动摘要）
+- Updated: state/state_patch.json（meta.current_chapter=ch002，open_loops 推进）
+- Open loops progressed: loop_food_shortage, loop_toxic_neighbor
+- Hook: 点卯提前到鸡鸣前，主角转向保名额
+- synced_at: 2025-12-20T19:04:56

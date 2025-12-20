@@ -1,288 +1,43 @@
 {
   "characters": {
-    "chen_shuying": {
-      "goal": "守住一家口粮与孩子们的安全",
-      "knowledge_flags": [
-        "household_management",
-        "village_rumors"
-      ],
-      "location": "loc_lin_home",
-      "relationships": [
-        {
-          "type": "夫妻",
-          "with": "lin_guozhu"
-        },
-        {
-          "type": "母子",
-          "with": "lin_cen"
-        }
-      ],
-      "status": "担忧流言扩散，提醒家人隐匿新法"
-    },
-    "du_guilan": {
-      "goal": "保住家族香火与粮缸",
-      "knowledge_flags": [
-        "village_history",
-        "water_source_history"
-      ],
-      "location": "loc_lin_home",
-      "relationships": [
-        {
-          "type": "母子",
-          "with": "lin_guozhu"
-        }
-      ],
-      "status": "咳嗽稍缓但仍体弱"
-    },
-    "he_kaijun": {
-      "goal": "按上级要求完成征粮与徭役",
-      "knowledge_flags": [
-        "levy_rules",
-        "enforcement"
-      ],
-      "location": "loc_yamen_outer",
-      "relationships": [
-        {
-          "type": "上下",
-          "with": "ye_shouzheng"
-        }
-      ],
-      "status": "执行任务"
-    },
     "lin_cen": {
-      "goal": "带家人活下去并建立稳定口粮",
-      "knowledge_flags": [
-        "modern_survival",
-        "basic_agriculture",
-        "ration_planning"
-      ],
       "location": "loc_lin_home",
-      "relationships": [
-        {
-          "type": "母子",
-          "with": "chen_shuying"
-        },
-        {
-          "type": "父子",
-          "with": "lin_guozhu"
-        },
-        {
-          "type": "冲突",
-          "with": "xu_wenshu"
-        }
-      ],
-      "status": "已确立定量省柴方案并以野菜闷粥暂止饥，井边受辱后压下冲突，知晓明卯点名与井水可能有问题"
+      "status": "鸡鸣前去里正处确认口径，答应再添半日劳力与一捆柴；与许文淑拉扯后回执不见，急于找回"
     },
     "lin_guozhu": {
-      "goal": "保住田地与劳力，稳住一家根基",
-      "knowledge_flags": [
-        "traditional_farming",
-        "soil_knowledge"
-      ],
-      "location": "loc_fields",
-      "relationships": [
-        {
-          "type": "夫妻",
-          "with": "chen_shuying"
-        },
-        {
-          "type": "父子",
-          "with": "lin_cen"
-        }
-      ],
-      "status": "被差役夜里点名，明卯需到衙外围集合，徭役压力逼近"
-    },
-    "lin_xiaohe": {
-      "goal": "守住家里仅有的牲口与工具",
-      "knowledge_flags": [
-        "livestock_care"
-      ],
       "location": "loc_lin_home",
-      "relationships": [
-        {
-          "type": "兄弟",
-          "with": "lin_cen"
-        }
-      ],
-      "status": "急于证明自己"
-    },
-    "lin_xiaotang": {
-      "goal": "照看幼弟与家务",
-      "knowledge_flags": [
-        "household_support"
-      ],
-      "location": "loc_lin_home",
-      "relationships": [
-        {
-          "type": "祖孙",
-          "with": "du_guilan"
-        }
-      ],
-      "status": "疲惫但坚韧"
-    },
-    "lin_yushu": {
-      "goal": "为家里争取粮食与人情",
-      "knowledge_flags": [
-        "market_pricing",
-        "negotiation"
-      ],
-      "location": "loc_market",
-      "relationships": [
-        {
-          "type": "兄妹",
-          "with": "lin_cen"
-        },
-        {
-          "type": "交易",
-          "with": "zhou_qiming"
-        }
-      ],
-      "status": "在集市周旋"
-    },
-    "xu_wenshu": {
-      "goal": "维持自家优先权并压过林家",
-      "knowledge_flags": [
-        "gossip_network",
-        "ration_loopholes"
-      ],
-      "location": "loc_neighbor_home",
-      "relationships": [
-        {
-          "type": "冲突",
-          "with": "lin_cen"
-        },
-        {
-          "type": "利用",
-          "with": "ye_shouzheng"
-        }
-      ],
-      "status": "挑事中"
-    },
-    "ye_shouzheng": {
-      "goal": "稳住村里秩序并保住官面差事",
-      "knowledge_flags": [
-        "relief_process",
-        "village_power"
-      ],
-      "location": "loc_headman_home",
-      "relationships": [
-        {
-          "type": "对接",
-          "with": "he_kaijun"
-        },
-        {
-          "type": "利益",
-          "with": "zhou_qiming"
-        }
-      ],
-      "status": "在压力中维稳"
-    },
-    "zhou_qiming": {
-      "goal": "控制粮价与村中流通",
-      "knowledge_flags": [
-        "supply_chain",
-        "price_manipulation"
-      ],
-      "location": "loc_grain_shop",
-      "relationships": [
-        {
-          "type": "利益",
-          "with": "ye_shouzheng"
-        }
-      ],
-      "status": "囤粮观望"
+      "status": "同意承担半日劳力并拆旧篱笆筹柴，守门待命"
     }
   },
-  "continuity_locks": {
-    "forbidden_changes": [
-      "不得跳 POV 或改为全知",
-      "不得无成本获得大量资源",
-      "不得凭空造物或引入系统金手指"
-    ],
-    "must_hold": [
-      "主角使用现代知识必须可落地",
-      "节奏快、爽点密集、苦尽甘来",
-      "毒舌邻居长期对抗线存在"
-    ]
-  },
+  "continuity_locks": {},
   "meta": {
-    "current_chapter": "ch001",
-    "in_story_date": "乾元九年二月",
-    "pov": "第三人称限知（主角：林岑）",
-    "random_seed": 20251219,
-    "tone_lock": "写实、紧张、克制、爽点集中",
+    "chapter_title": "《鸡鸣前回执不见》",
+    "current_chapter": "ch003",
+    "in_story_date": "1100-03-15",
     "total_chapters": 80,
-    "words_per_chapter": 2500
+    "words_per_chapter": 3200
   },
   "open_loops": [
     {
       "created_in": "ch001",
-      "description": "家中粮缸见底，必须找到稳定口粮方案，否则全家难以度过灾年。",
+      "description": "林家余粮见底，需尽快找到稳定口粮",
       "id": "loop_food_shortage",
-      "note": "定量刻线与浸泡闷煮配合野菜焯水仅缓解当晚饥饿，粮源仍缺",
-      "owner": "chen_shuying",
-      "planned_payoff_window": "ch003-ch012",
-      "status": "progressed",
-      "trigger": "出现稳定粮源或明确的生产/交换路径"
-    },
-    {
-      "created_in": "ch001",
-      "description": "毒舌邻居散布流言并多次刁难，随时可能影响名册与赈灾资格。",
-      "id": "loop_neighbor_sabotage",
-      "note": "许文淑井边插队并散布林家藏粮占水谣言，流言扩散",
-      "owner": "xu_wenshu",
-      "planned_payoff_window": "ch006-ch018",
-      "status": "progressed",
-      "trigger": "拿到能反制流言的证据或完成公开反击"
-    },
-    {
-      "created_in": "ch001",
-      "description": "徭役名册即将下发，林家可能被抽走关键劳力。",
-      "id": "loop_labor_levy",
-      "note": "差役夜里上门点名，明卯时需集合",
-      "owner": "he_kaijun",
-      "planned_payoff_window": "ch010-ch022",
-      "status": "progressed",
-      "trigger": "掌握名册规则或争取缓冲名额"
-    },
-    {
-      "created_in": "ch001",
-      "description": "春播种子与农具短缺，若无解决方案将直接影响收成。",
-      "id": "loop_seed_supply",
-      "owner": "lin_guozhu",
-      "planned_payoff_window": "ch004-ch015",
-      "status": "open",
-      "trigger": "获得稳定的种子来源或替代方案"
-    },
-    {
-      "created_in": "ch001",
-      "description": "老井水量不稳且疑似污染，取水安全与灌溉都被威胁。",
-      "id": "loop_water_source",
-      "owner": "du_guilan",
-      "planned_payoff_window": "ch008-ch020",
-      "status": "open",
-      "trigger": "查明水源问题并建立可持续取水机制"
-    },
-    {
-      "created_in": "ch001",
-      "description": "主角言行异常引起关注，身份风险可能影响家族安全。",
-      "id": "loop_identity_risk",
+      "note": "ch003 推进证据：为保点卯口径再加半日劳力与一捆柴，短期口粮路径更明确但代价上升",
       "owner": "lin_cen",
-      "planned_payoff_window": "ch015-ch030",
-      "status": "open",
-      "trigger": "建立可信的解释或关键人背书"
+      "planned_payoff_window": "ch001-ch010",
+      "status": "progressed",
+      "trigger": "粮缸见底与口粮分配"
+    },
+    {
+      "created_in": "ch001",
+      "description": "许文淑借流言与占便宜施压林家",
+      "id": "loop_toxic_neighbor",
+      "note": "ch003 推进证据：许文淑巷口拖延并拉扯回执，回执后来失落，名额风险被放大",
+      "owner": "xu_wenshu",
+      "planned_payoff_window": "ch001-ch012",
+      "status": "active",
+      "trigger": "巷道口当众挖苦与挑衅"
     }
   ],
-  "world_state": {
-    "constraints": [
-      "赈灾名册由里正掌控",
-      "粮食与铁器受限",
-      "出村需路引或人情",
-      "徭役随时加压"
-    ],
-    "economy": "粮价高涨、赊账普遍、劳役压顶",
-    "tech_or_magic_level": "类中国古代农业技术，无超自然",
-    "time_anchor": "架空王朝北方旱灾饥荒年",
-    "weather": "连年干旱、风沙大、春末少雨"
-  }
+  "world_state": {}
 }

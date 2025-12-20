@@ -1,25 +1,24 @@
 # BOOTSTRAP_REPORT
 
-- generated_at_utc: 2025-12-19T13:27:57Z
+- generated_at_utc: 2025-12-20T07:32:20Z
 - repo_root: E:/Lianghuagit/xiaoshuo
-- codex_cli_detected: True
+- codex_cli_detected: False
 
 ## Directory Check
-- RESULT: FAIL
-- missing: `state/backups/`
-- missing: `recap/chapter_summaries/`
-- missing: `manuscript/`
-- missing: `logs/`
+- RESULT: PASS
 
 ## File Check
 - RESULT: PASS
 
 ## JSON Parse Check
 - `inputs/project_brief.json`: PASS — OK
-- `state/current_state.json`: PASS — OK
+- `state/current_state.json`: FAIL — JSON parse failed: Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)
 
 ## Python Compile Check
 - `python -m compileall tools`: PASS
+
+## Chapter Title Check
+- RESULT: PASS
 
 ## Directory Tree (top)
 - `inputs/` (edit `inputs/project_brief.json`)

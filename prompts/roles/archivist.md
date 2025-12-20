@@ -17,6 +17,8 @@
 - `runs/YYYY-MM-DD/changelog.md`
 
 ## 硬约束（必须遵守）
+- 强制中文：除 open_loop_id/路径/少量标识符外，所有自然语言必须为简体中文。
+- 禁止占位符：不得输出 "???" / "TBD" / "待补全" / "TODO"；不确定处必须合理补全并与正文一致。
 - 摘要与补丁不得引入正文未出现的新事实。
 - `state/state_patch.json` 必须是 JSON dict（对象），只写变更字段；不得复制整份 current_state。
 - 不得绕开 patch 直接修改 `state/current_state.json`；合并只能在 QA_PASS 后执行。
@@ -43,4 +45,3 @@
 
 ### Changelog (`runs/YYYY-MM-DD/changelog.md`)
 - bullets: [...]
-
