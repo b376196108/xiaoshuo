@@ -22,30 +22,80 @@ from _common import (
 
 _TITLE_LINE_RE = re.compile(r"^##\s+《.+》\s*$")
 
+# 叙事质量检查：默认不把“新结构字段缺失”直接判 FAIL，以兼容旧章纲。
+# 等 ChapterPlanner/Drafter 升级后，你可以把它改为 True，直接硬卡口。
 STRICT_NARRATIVE_QA = False
 
 
-# 爽文卡口：正文中严禁出现“规则标签”。一旦出现，即判定 FAIL。
-FORBIDDEN_RULE_LABELS = [
-    "落袋证据句：",
-    "代价句：",
-    "旁观者反应句：",
-    "下一步指向句：",
-]
+def _extract_plan_chapter_title(plan_text: str) -> str | None:
+    m = re.search(r"^chapter_title:\s*《(.+?)》\s*$", plan_text, re.MULTILINE)
+    return m.group(1).strip() if m else None
 
-_MUST_INCLUDE_KEYS = (
-    "loot_sentence",
-    "cost_sentence",
-    "crowd_sentence",
-    "next_step_sentence",
-)
 
-_OLD_MUST_INCLUDE_LABEL_MAP = {
-    "落袋证据句": "loot_sentence",
-    "代价句": "cost_sentence",
-    "旁观者反应句": "crowd_sentence",
-    "下一步指向句": "next_step_sentence",
-}
+def _extract_manuscript_title(chapter_text: str) -> str | None:
+    lines = chapter_text.splitlines()
+    if len(lines) < 2:
+        return None
+    m = re.match(r"^##\s+《(.+?)》\s*$", lines[1].strip())
+    return m.group(1).strip() if m else None
+
+
+def _extract_section(plan_text: str, start_header: str) -> str:
+    """
+    从 Markdown 中抽取某个 header 到下一个 header 之间的内容。
+    start_header 需与行内容完全匹配，例如 '### Open Loops'。
+    规则：从 start_header 下一行开始，直到遇到下一行以 '#' 开头的 header 为止。
+    """
+    lines = plan_text.splitlines()
+    start_idx = -1
+    for i, line in enumerate(lines):
+        if line.strip() == start_header:
+            start_idx = i
+            break
+    if start_idx < 0:
+        return ""
+
+    buf: list[str] = []
+    for line in lines[start_idx + 1 :]:
+        if line.lstrip().startswith("#"):
+            break
+        buf.append(line)
+    return "\n".join(buf).strip()
+
+
+def _extract_anchor_phrases(plan_text: str) -> list[str]:
+    # 兼容两种写法：
+    # 1) 单独字段行：anchor_phrase: xxxx
+    # 2) 行内字典：..., anchor_phrase: xxxx, ...
+    phrases: list[str] = []
+    for m in re.finditer(r"anchor_phrase:\s*([^\n,}]+)", plan_text):
+        v = m.group(1).strip().strip('"').strip("'")
+        if v:
+            phrases.append(v)
+
+    # 去重保持顺序
+    seen: set[str] = set()
+    out: list[str] = []
+    for p in phrases:
+        if p not in seen:
+            seen.add(p)
+            out.append(p)
+    return out
+
+
+def _count_scenes(plan_text: str) -> int:
+    # 优先统计 no: N
+    nos = re.findall(r"\bno:\s*(\d+)\b", plan_text)
+    if nos:
+        return len(nos)
+    # 退化：按 setting: 行估计
+    return len(re.findall(r"\bsetting:\s*\S", plan_text))
+
+
+def _has_all_skeleton_fields(plan_text: str) -> tuple[bool, list[str]]:
+    required = ["hook_scene_no:", "push_scene_nos:", "escalation_scene_no:", "ending_hook_scene_no:"]
+    missing = [k for k in required if k not in plan_text]
+    return (len(missing) == 0, missing)
 
 
 def _extract_style_locks(style_text: str) -> dict[str, str]:
@@ -77,7 +127,13 @@ def _detect_capitalized_names(chapter_text: str) -> set[str]:
 
 
 def _planned_open_loop_ids(chapter_plan_text: str, known_loop_ids: set[str]) -> list[str]:
-    return [loop_id for loop_id in sorted(known_loop_ids) if loop_id and (loop_id in chapter_plan_text)]
+    """
+    只在 '### Open Loops' 段落内匹配，避免 loop id 在说明文字/示例里出现导致误判。
+    若未找到该段落，则回退到全文匹配（兼容旧格式）。
+    """
+    sec = _extract_section(chapter_plan_text, start_header="### Open Loops")
+    target_text = sec if sec else chapter_plan_text
+    return [loop_id for loop_id in sorted(known_loop_ids) if loop_id and (loop_id in target_text)]
 
 
 def _load_optional_json(path: Path) -> dict[str, Any] | None:
@@ -181,130 +237,6 @@ def _scan_placeholders(text: str) -> list[str]:
     if "\ufffd" in text:
         issues.append("替换字符(�)")
     return issues
-
-
-def _scan_forbidden_rule_labels(chapter_text: str) -> list[str]:
-    """检测正文是否误写了“规则标签”。命中任何一项都应判定 FAIL。"""
-    hits: list[str] = []
-    for lbl in FORBIDDEN_RULE_LABELS:
-        if lbl in chapter_text:
-            hits.append(lbl)
-    return hits
-
-
-def _strip_wrapping_quotes(s: str) -> str:
-    s = s.strip()
-    if len(s) >= 2 and ((s[0] == s[-1] == '"') or (s[0] == s[-1] == "'")):
-        return s[1:-1].strip()
-    return s
-
-
-def _extract_must_include_block(plan_text: str) -> tuple[bool, str]:
-    """抽取 must_include_lines: 块（若存在）。返回 (found, block_text)。"""
-    lines = plan_text.splitlines()
-    start = -1
-    for i, line in enumerate(lines):
-        if re.match(r"^\s*must_include_lines\s*:\s*$", line):
-            start = i
-            break
-    if start < 0:
-        return False, ""
-    buf: list[str] = []
-    for line in lines[start + 1 :]:
-        if line.lstrip().startswith("#"):
-            break
-        buf.append(line)
-    return True, "\n".join(buf).strip()
-
-
-def _parse_must_include_lines(plan_text: str) -> tuple[bool, dict[str, str]]:
-    """
-    解析 must_include_lines 四句：
-    - 新格式：loot_sentence/cost_sentence/crowd_sentence/next_step_sentence
-    - 旧格式：'落袋证据句：…' 等
-    返回 (found_block, {key: sentence})
-    """
-    found, block = _extract_must_include_block(plan_text)
-    out: dict[str, str] = {k: "" for k in _MUST_INCLUDE_KEYS}
-
-    def _assign(key: str, raw: str) -> None:
-        v = _strip_wrapping_quotes(raw.strip())
-        if v:
-            out[key] = v
-
-    if found:
-        for line in block.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            m = re.match(
-                r"^-\s*(loot_sentence|cost_sentence|crowd_sentence|next_step_sentence)\s*:\s*(.+)$",
-                line,
-            )
-            if m:
-                _assign(m.group(1), m.group(2))
-                continue
-            m2 = re.match(
-                r"^(loot_sentence|cost_sentence|crowd_sentence|next_step_sentence)\s*:\s*(.+)$",
-                line,
-            )
-            if m2:
-                _assign(m2.group(1), m2.group(2))
-                continue
-            m3 = re.match(r"^-\s*([\u4e00-\u9fa5]{2,8})：\s*(.+)$", line)
-            if m3 and (m3.group(1) in _OLD_MUST_INCLUDE_LABEL_MAP):
-                _assign(_OLD_MUST_INCLUDE_LABEL_MAP[m3.group(1)], m3.group(2))
-                continue
-
-    if not found:
-        for cn_label, key in _OLD_MUST_INCLUDE_LABEL_MAP.items():
-            m = re.search(rf"^\s*-\s*{re.escape(cn_label)}：\s*(.+)$", plan_text, re.MULTILINE)
-            if m:
-                _assign(key, m.group(1))
-
-    return found, out
-
-
-def _extract_verdict_line(plan_text: str) -> str | None:
-    """可选：解析 verdict_line: '一句话'。"""
-    m = re.search(r"^\s*verdict_line\s*:\s*(.+)$", plan_text, re.MULTILINE)
-    if not m:
-        return None
-    v = _strip_wrapping_quotes(m.group(1))
-    return v or None
-
-
-def _extract_crowd_beats(plan_text: str) -> list[str]:
-    """可选：解析 crowd_beats: - '...' 列表。"""
-    lines = plan_text.splitlines()
-    start = -1
-    for i, line in enumerate(lines):
-        if re.match(r"^\s*crowd_beats\s*:\s*$", line):
-            start = i
-            break
-    if start < 0:
-        return []
-    beats: list[str] = []
-    for line in lines[start + 1 :]:
-        if line.lstrip().startswith("#"):
-            break
-        if re.match(r"^\s*-\s+", line):
-            v = re.sub(r"^\s*-\s+", "", line).strip()
-            v = _strip_wrapping_quotes(v)
-            if v:
-                beats.append(v)
-        elif line.strip() == "":
-            continue
-        else:
-            break
-
-    seen: set[str] = set()
-    out: list[str] = []
-    for b in beats:
-        if b not in seen:
-            seen.add(b)
-            out.append(b)
-    return out
 
 
 def _scan_empty_plan_fields(plan_text: str) -> list[str]:
@@ -434,7 +366,9 @@ def _build_resync_instructions(
         manuscript_mtime = status["manuscript"]["mtime"]
         newer_than = []
         for key in out_of_sync:
-            newer_than.append(f"{status[key]['path'].as_posix()} ({_format_mtime(status[key]['mtime'])})")
+            newer_than.append(
+                f"{status[key]['path'].as_posix()} ({_format_mtime(status[key]['mtime'])})"
+            )
         lines.append(
             "- 不同步：正文版本更新晚于 "
             + ", ".join(newer_than)
@@ -459,13 +393,13 @@ def _build_resync_instructions(
     lines.append("任务：重新生成并写入以下文件（全部必须写入/覆盖旧内容）：")
     lines.append(f"1) recap/chapter_summaries/{chapter_id}.md")
     lines.append("2) recap/rolling_recap.md")
-    lines.append('3) state/state_patch.json（JSON 对象，仅 delta；必须包含 meta.current_chapter）')
+    lines.append("3) state/state_patch.json（JSON 对象，仅 delta；必须包含 meta.current_chapter）")
     lines.append(f"4) runs/{run_date}/changelog.md（追加 synced_at 时间戳）")
     lines.append("")
     lines.append("硬性要求：")
     lines.append("- 只允许写入上述四个路径，不得修改其他文件")
     lines.append("- state/state_patch.json 必须是严格 JSON 对象，仅 delta")
-    lines.append(f'- meta.current_chapter 必须为 "{chapter_id}"（字符串）')
+    lines.append(f"- meta.current_chapter 必须为 \"{chapter_id}\"（字符串）")
     lines.append("- 不生成任何小说正文")
     lines.append("")
     lines.append("同步完成后请运行：")
@@ -487,7 +421,9 @@ def main() -> int:
     root = get_repo_root()
     run_dir = root / "runs" / args.date
     run_dir.mkdir(parents=True, exist_ok=True)
-    log = setup_logger("continuity_checks", log_file=run_dir / "continuity_checks.log", verbose=args.verbose)
+    log = setup_logger(
+        "continuity_checks", log_file=run_dir / "continuity_checks.log", verbose=args.verbose
+    )
 
     try:
         chap = normalize_chapter_id(args.chapter)
@@ -508,17 +444,6 @@ def main() -> int:
     warnings: list[dict[str, str]] = []
     infos: list[str] = []
     placeholder_report_lines: list[str] = []
-    narrative_gate: dict[str, Any] = {
-        "forbidden_labels_hit": [],
-        "must_include_found_block": False,
-        "must_include_lines": {},
-        "must_include_missing": [],
-        "verdict_line": None,
-        "verdict_line_missing": False,
-        "crowd_beats": [],
-        "crowd_beats_missing": [],
-        "crowd_beats_order_ok": True,
-    }
 
     body_chars: int | None = None
     if not chapter_path.exists():
@@ -565,17 +490,6 @@ def main() -> int:
                     "rule": "manuscript_placeholders_or_garbled",
                     "evidence": f"正文中出现占位/乱码：{', '.join(manuscript_placeholder_issues)}",
                     "fix": "重跑 Step2（正文+润色），确保 UTF-8 保存且不得出现 ???/TODO/乱码。",
-                }
-            )
-
-        forbidden_hits = _scan_forbidden_rule_labels(chapter_text)
-        narrative_gate["forbidden_labels_hit"] = forbidden_hits
-        if forbidden_hits:
-            failures.append(
-                {
-                    "rule": "forbidden_rule_labels_in_manuscript",
-                    "evidence": f"正文中出现规则标签：{', '.join(forbidden_hits)}（必须删除标签本身，只保留纯正文句子）",
-                    "fix": "重跑 Step2（正文+润色），确保 must_include_lines 四句以“纯正文句子”形式自然出现，严禁带 '落袋证据句：/代价句：/...' 等标签。",
                 }
             )
 
@@ -726,34 +640,98 @@ def main() -> int:
         )
         planned: list[str] = []
         placeholder_report_lines.append("- chapter_plan: 缺失")
-        # 章纲缺失时，爽文卡口无法做 must_include 校验
     else:
         plan_text = read_text(plan_path)
+        planned = _planned_open_loop_ids(plan_text, known_loop_ids)
 
-        # 爽文卡口：从章纲解析 must_include_lines / verdict_line / crowd_beats
-        found_must_block, must_lines = _parse_must_include_lines(plan_text)
-        narrative_gate["must_include_found_block"] = found_must_block
-        narrative_gate["must_include_lines"] = must_lines
-
-        # 若章纲明确给了 must_include_lines 块，但解析结果为空，视为章纲格式错误
-        if found_must_block and (not any(must_lines.values())):
-            failures.append(
+        # --- 叙事质量增强检查（与 ChapterPlanner/Drafter 的新字段闭环） ---
+        plan_title = _extract_plan_chapter_title(plan_text)
+        if not plan_title:
+            warnings.append(
                 {
-                    "rule": "must_include_lines_parse_failed",
-                    "evidence": "检测到 must_include_lines: 块，但未解析出 loot/cost/crowd/next_step 四句。",
-                    "fix": "修订 chapter_plan.md：必须按规则输出 must_include_lines 四句（loot_sentence/cost_sentence/crowd_sentence/next_step_sentence），且每句为完整中文句子。",
+                    "topic": "plan_chapter_title_missing",
+                    "evidence": "chapter_plan.md 未找到 chapter_title: 《…》 行。",
+                    "suggestion": "更新 ChapterPlanner，确保输出 chapter_title 字段（并用《》包住）。",
+                }
+            )
+        else:
+            ms_title = _extract_manuscript_title(chapter_text)
+            if ms_title and (ms_title != plan_title):
+                failures.append(
+                    {
+                        "rule": "title_mismatch_with_plan",
+                        "evidence": f"章纲标题=《{plan_title}》，但正文标题=《{ms_title}》。",
+                        "fix": "以 chapter_plan.md 的 chapter_title 为准，修正 manuscript 第二行标题，或重跑 Step2。",
+                    }
+                )
+
+        has_any_skeleton = any(
+            k in plan_text
+            for k in ["hook_scene_no:", "push_scene_nos:", "escalation_scene_no:", "ending_hook_scene_no:"]
+        )
+        if has_any_skeleton:
+            ok, missing = _has_all_skeleton_fields(plan_text)
+            if not ok:
+                msg = f"章纲出现部分 Chapter Skeleton 字段，但缺失：{', '.join(missing)}"
+                if STRICT_NARRATIVE_QA:
+                    failures.append(
+                        {
+                            "rule": "chapter_skeleton_incomplete",
+                            "evidence": msg,
+                            "fix": "在 chapter_plan.md 补齐 hook_scene_no/push_scene_nos/escalation_scene_no/ending_hook_scene_no。",
+                        }
+                    )
+                else:
+                    warnings.append(
+                        {
+                            "topic": "chapter_skeleton_incomplete",
+                            "evidence": msg,
+                            "suggestion": "建议升级 ChapterPlanner 输出完整四段骨架映射，后续可将其设为硬失败。",
+                        }
+                    )
+
+        anchors = _extract_anchor_phrases(plan_text)
+        if anchors:
+            missing_anchors = [a for a in anchors if a not in chapter_text]
+            if missing_anchors:
+                failures.append(
+                    {
+                        "rule": "anchor_phrase_missing_in_manuscript",
+                        "evidence": f"以下 anchor_phrase 未在正文中原样出现：{', '.join(missing_anchors[:10])}",
+                        "fix": "修订正文将每条 anchor_phrase 自然融入；或重跑 Step2 并在 Drafter 中强制 anchor_phrase 原样出现。",
+                    }
+                )
+        else:
+            warnings.append(
+                {
+                    "topic": "anchor_phrase_missing_in_plan",
+                    "evidence": "章纲未检测到 anchor_phrase 字段。",
+                    "suggestion": "建议升级 ChapterPlanner：Scene List 每场景输出 anchor_phrase（8–16 字）以便 QA 可验证。",
                 }
             )
 
-        verdict_line = _extract_verdict_line(plan_text)
-        if verdict_line:
-            narrative_gate["verdict_line"] = verdict_line
+        scene_count = _count_scenes(plan_text)
+        cost_count = len(re.findall(r"\bcost:\s*\S", plan_text))
+        if cost_count > 0 and scene_count > 0 and cost_count < scene_count:
+            msg = f"Scene List 场景数≈{scene_count}，但 cost 字段仅 {cost_count} 条。"
+            if STRICT_NARRATIVE_QA:
+                failures.append(
+                    {
+                        "rule": "scene_cost_missing",
+                        "evidence": msg,
+                        "fix": "升级 ChapterPlanner：每个场景补齐 cost（具体代价）。",
+                    }
+                )
+            else:
+                warnings.append(
+                    {
+                        "topic": "scene_cost_missing",
+                        "evidence": msg,
+                        "suggestion": "建议升级 ChapterPlanner：每场景写 cost（代价），后续可设为硬失败。",
+                    }
+                )
 
-        crowd_beats = _extract_crowd_beats(plan_text)
-        if crowd_beats:
-            narrative_gate["crowd_beats"] = crowd_beats
-
-        planned = _planned_open_loop_ids(plan_text, known_loop_ids)
+        # --- 原有 open_loops / 占位符检查 ---
         if len(planned) < 2:
             failures.append(
                 {
@@ -774,67 +752,6 @@ def main() -> int:
             placeholder_report_lines.append(f"- chapter_plan: FAIL（{', '.join(plan_placeholder_issues)}）")
         else:
             placeholder_report_lines.append("- chapter_plan: PASS")
-
-            # 爽文卡口：强制四句落地（纯正文）+（可选）verdict_line + crowd_beats
-            if chapter_text:
-                missing_sentences: list[str] = []
-                for k in _MUST_INCLUDE_KEYS:
-                    sent = str(must_lines.get(k, "")).strip()
-                    if sent and (sent not in chapter_text):
-                        missing_sentences.append(f"{k}={sent}")
-
-                narrative_gate["must_include_missing"] = missing_sentences
-                if missing_sentences:
-                    failures.append(
-                        {
-                            "rule": "must_include_lines_missing_in_manuscript",
-                            "evidence": "must_include_lines 四句未逐字出现在正文：" + "; ".join(missing_sentences[:20]),
-                            "fix": "修订正文：四句必须逐字出现一次，且必须是纯正文句子（不得带标签前缀）。",
-                        }
-                    )
-
-                if verdict_line and (verdict_line not in chapter_text):
-                    narrative_gate["verdict_line_missing"] = True
-                    failures.append(
-                        {
-                            "rule": "verdict_line_missing_in_manuscript",
-                            "evidence": f"verdict_line 未逐字出现在正文：{verdict_line}",
-                            "fix": "修订正文：将 verdict_line 自然融入正文一次（不得标签化）。",
-                        }
-                    )
-
-                if crowd_beats:
-                    missing_beats: list[str] = []
-                    positions: list[int] = []
-                    for b in crowd_beats:
-                        pos = chapter_text.find(b)
-                        if pos < 0:
-                            missing_beats.append(b)
-                        else:
-                            positions.append(pos)
-
-                    narrative_gate["crowd_beats_missing"] = missing_beats
-                    if missing_beats:
-                        failures.append(
-                            {
-                                "rule": "crowd_beats_missing_in_manuscript",
-                                "evidence": f"crowd_beats 未逐字出现在正文：{', '.join(missing_beats[:10])}",
-                                "fix": "修订正文：将 crowd_beats 中每条短句逐字自然融入正文一次。",
-                            }
-                        )
-
-                    # 顺序校验：必须按列表顺序出现（若全部存在）
-                    if (not missing_beats) and len(positions) == len(crowd_beats):
-                        order_ok = all(positions[i] <= positions[i + 1] for i in range(len(positions) - 1))
-                        narrative_gate["crowd_beats_order_ok"] = order_ok
-                        if not order_ok:
-                            failures.append(
-                                {
-                                    "rule": "crowd_beats_order_invalid",
-                                    "evidence": "crowd_beats 在正文中的出现顺序与章纲不一致。",
-                                    "fix": "修订正文：确保 crowd_beats 按章纲顺序依次出现。",
-                                }
-                            )
 
     summary_text = read_text(summary_path) if summary_path.exists() else ""
     rolling_path = root / "recap" / "rolling_recap.md"
@@ -995,53 +912,6 @@ def main() -> int:
     report_lines.append(f"- 章纲路径: {plan_path.as_posix()}")
     report_lines.append(f"- 摘要路径: {summary_path.as_posix()}")
     report_lines.append(f"- state_patch 路径: {patch_path.as_posix()}")
-
-    report_lines.append("")
-    report_lines.append("## 爽文卡口检查")
-
-    forbidden_hits = narrative_gate.get("forbidden_labels_hit", []) or []
-    if forbidden_hits:
-        report_lines.append(f"- 规则标签命中: FAIL（{', '.join(forbidden_hits)}）")
-    else:
-        report_lines.append("- 规则标签命中: PASS（未发现落袋/代价/旁观/下一步标签前缀）")
-
-    found_must = bool(narrative_gate.get("must_include_found_block"))
-    must_lines = narrative_gate.get("must_include_lines", {}) or {}
-    must_missing = narrative_gate.get("must_include_missing", []) or []
-    if found_must:
-        report_lines.append(f"- must_include_lines: FOUND（解析到 {sum(1 for v in must_lines.values() if str(v).strip())}/4 句）")
-    else:
-        report_lines.append("- must_include_lines: NOT FOUND（章纲未提供 must_include_lines 块或使用旧格式）")
-
-    if must_missing:
-        report_lines.append(f"- 四句落地: FAIL（缺失 {len(must_missing)} 项）")
-        for item in must_missing[:8]:
-            report_lines.append(f"  - {item}")
-    else:
-        if any(str(v).strip() for v in must_lines.values()):
-            report_lines.append("- 四句落地: PASS（正文逐字命中）")
-        else:
-            report_lines.append("- 四句落地: SKIP（章纲未解析到四句，或使用旧格式且未提供）")
-
-    verdict_line = narrative_gate.get("verdict_line")
-    verdict_missing = bool(narrative_gate.get("verdict_line_missing"))
-    if verdict_line:
-        report_lines.append(f"- verdict_line: {'FAIL' if verdict_missing else 'PASS'}（{verdict_line}）")
-    else:
-        report_lines.append("- verdict_line: SKIP（未配置）")
-
-    crowd_beats = narrative_gate.get("crowd_beats", []) or []
-    crowd_missing = narrative_gate.get("crowd_beats_missing", []) or []
-    crowd_order_ok = bool(narrative_gate.get("crowd_beats_order_ok", True))
-    if crowd_beats:
-        if crowd_missing:
-            report_lines.append(f"- crowd_beats: FAIL（缺失 {len(crowd_missing)} 条）")
-            for b in crowd_missing[:8]:
-                report_lines.append(f"  - {b}")
-        else:
-            report_lines.append(f"- crowd_beats: PASS（{len(crowd_beats)} 条逐字命中；顺序={'OK' if crowd_order_ok else 'BAD'}）")
-    else:
-        report_lines.append("- crowd_beats: SKIP（未配置）")
 
     report_lines.append("")
     report_lines.append("## 占位符/问号串检测")

@@ -1,8 +1,8 @@
 {
   "characters": {
     "lin_cen": {
-      "location": "loc_river_canal",
-      "status": "在井口争水并用修绳换到半桶清水和旧木桶，欠王老拐一回人情；发现水面黑沫异味，准备追查上游"
+      "location": "loc_lin_home",
+      "status": "半天搬沙清沟换到桥头口信条与杂粮并当众压口风，但三日清沟验收与口信时效压缩，决定分工并次日去桥头找更硬证人。"
     },
     "lin_guozhu": {
       "location": "loc_lin_home",
@@ -11,8 +11,8 @@
   },
   "continuity_locks": {},
   "meta": {
-    "chapter_title": "《井口争水见黑沫》",
-    "current_chapter": "ch005",
+    "chapter_title": "《桥头卡口抢口径》",
+    "current_chapter": "ch007",
     "in_story_date": "1100-03-15",
     "total_chapters": 80,
     "words_per_chapter": 3200
@@ -22,8 +22,8 @@
       "created_in": "ch001",
       "description": "林家余粮见底，需尽快找到稳定口粮",
       "id": "loop_food_shortage",
-      "last_touched_in": "ch005",
-      "note": "ch005 证据：林岑用修好取水工具换到半桶清水和旧木桶，当场入缸但付出两担挑水与人情债，短期口粮仍受限水与水质影响",
+      "last_touched_in": "ch007",
+      "note": "ch007 证据：林岑半天搬沙清沟换到口信条与杂粮，并立分时取水与竹筛过滤流程，但三日清沟验收成为硬门槛，口粮仍紧。",
       "owner": "lin_cen",
       "planned_payoff_window": "ch001-ch010",
       "status": "progressed",
@@ -33,8 +33,8 @@
       "created_in": "ch001",
       "description": "许文淑借流言与占便宜施压林家",
       "id": "loop_toxic_neighbor",
-      "last_touched_in": "ch005",
-      "note": "ch005 证据：许文淑在井口当众挑衅并散布占名额口径，林岑回击并记下人证，冲突公开化",
+      "last_touched_in": "ch007",
+      "note": "ch007 证据：林岑当众亮出口信与手印压住许文淑口风，围观转向，但对方仍以口信时效继续质疑。",
       "owner": "xu_wenshu",
       "planned_payoff_window": "ch001-ch012",
       "status": "progressed",

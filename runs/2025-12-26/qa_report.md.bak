@@ -1,0 +1,60 @@
+QA_RESULT: FAIL
+
+# QA 报告 — 2025-12-26 — ch007
+
+## 硬失败
+- 规则: artifact_missing: manuscript
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/manuscript/ch007.md
+  修复: 先生成 `manuscript/chNNN.md`。
+- 规则: chapter_id_mismatch
+  证据: state_patch.meta.current_chapter=ch006 与目标章节 ch007 不一致。
+  修复: 重跑 Step3（Archivist）生成与目标章节一致的 state_patch。
+- 规则: artifact_missing: chapter_plan
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/runs/2025-12-26/chapter_plan.md
+  修复: 先生成 `runs/YYYY-MM-DD/chapter_plan.md`。
+- 规则: artifact_missing: changelog
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/runs/2025-12-26/changelog.md
+  修复: 重跑 Archivist（Step 3）生成 recap/state/changelog 后再 QA。
+- 规则: artifact_missing: chapter_summary
+  证据: 缺失文件：E:/Lianghuagit/xiaoshuo/recap/chapter_summaries/ch007.md
+  修复: 重跑 Archivist（Step 3）生成 recap/state/changelog 后再 QA。
+
+## 警告
+- （无）
+
+## 章节号一致性
+- 目标章节：ch007
+- state_patch.meta.current_chapter：ch006
+- state.current_state.meta.current_chapter：ch006（允许落后，属正常）
+
+## 正文字数
+- 正文字符数: 无
+
+## open_loops 校验
+- 章纲标注推进: []
+- 章纲路径: E:/Lianghuagit/xiaoshuo/runs/2025-12-26/chapter_plan.md
+- 摘要路径: E:/Lianghuagit/xiaoshuo/recap/chapter_summaries/ch007.md
+- state_patch 路径: E:/Lianghuagit/xiaoshuo/state/state_patch.json
+
+## 爽文卡口检查
+- 规则标签命中: PASS（未发现落袋/代价/旁观/下一步标签前缀）
+- must_include_lines: NOT FOUND（章纲未提供 must_include_lines 块或使用旧格式）
+- 四句落地: SKIP（章纲未解析到四句，或使用旧格式且未提供）
+- verdict_line: SKIP（未配置）
+- crowd_beats: SKIP（未配置）
+
+## 占位符/问号串检测
+- chapter_plan: 缺失
+- changelog: 缺失
+
+## 归档同步
+- 正文: E:/Lianghuagit/xiaoshuo/manuscript/ch007.md | 缺失
+- 章节摘要: E:/Lianghuagit/xiaoshuo/recap/chapter_summaries/ch007.md | 缺失
+- 状态补丁: E:/Lianghuagit/xiaoshuo/state/state_patch.json | 时间：2025-12-21 18:59:23
+- 变更日志: E:/Lianghuagit/xiaoshuo/runs/2025-12-26/changelog.md | 缺失
+
+## 推荐返工步骤（仅 FAIL 时）
+1) 补齐缺失产物（chapter_plan / manuscript / summary / patch）。
+2) 确保章纲推进 >=2 条 open_loops，并明确写出 id。
+3) 更新 summary + state_patch，让每条计划 loop 的 id 明确出现。
+4) 重跑：`python tools/continuity_checks.py --date 2025-12-26 --chapter ch007`
