@@ -1,0 +1,6 @@
+- Updated: recap/chapter_summaries/ch004.md（同步正文要点与 open_loops 证据）
+- Updated: recap/rolling_recap.md（追加 ch004 事件与冲突）
+- Updated: state/state_patch.json（ch004 增量补丁）
+- Open loops progressed: loop_food_shortage, loop_toxic_neighbor
+- Hook: 名册贴出“补证”红印，鸡鸣前必须交回执，否则除名
+- synced_at: 2025-12-21T09:46:04

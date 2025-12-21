@@ -1,28 +1,28 @@
 {
   "meta": {
-    "current_chapter": "ch003",
-    "chapter_title": "《鸡鸣前回执不见》"
+    "current_chapter": "ch004",
+    "chapter_title": "《回执失手抢种子》"
   },
   "characters": {
     "lin_cen": {
-      "location": "loc_lin_home",
-      "status": "鸡鸣前去里正处确认口径，答应再添半日劳力与一捆柴；与许文淑拉扯后回执不见，急于找回"
+      "location": "loc_village_lane",
+      "status": "回执失落后争到临时口簿口径（需证人补证并加半日劳力与一捆柴）；与许文淑对峙并记下证人名单；在粮铺修筛、扛粮换到少量种子并用漂选与风选筛出可播籽；名册贴出补证红印，鸡鸣前必须交回执"
     },
     "lin_guozhu": {
       "location": "loc_lin_home",
-      "status": "同意承担半日劳力并拆旧篱笆筹柴，守门待命"
+      "status": "外出翻找回执无果，继续守门并筹柴"
     }
   },
   "open_loops": [
     {
       "id": "loop_food_shortage",
       "status": "progressed",
-      "note": "ch003 推进证据：为保点卯口径再加半日劳力与一捆柴，短期口粮路径更明确但代价上升"
+      "note": "ch004 推进证据：以修筛+搬运换到一小包种子并用漂选/风选筛出可播籽，但耗水与劳力债增加"
     },
     {
       "id": "loop_toxic_neighbor",
       "status": "active",
-      "note": "ch003 推进证据：许文淑巷口拖延并拉扯回执，回执后来失落，名额风险被放大"
+      "note": "ch004 推进证据：巷口对峙并记下证人名单，许文淑放话卡名额，冲突升级"
     }
   ]
 }
