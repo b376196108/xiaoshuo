@@ -22,6 +22,13 @@
 - 场景字段不得留空；setting/cast 需包含中文名，可用“中文名(内部id)”格式。
 - 章节标题硬规则：必须在 chapter_plan.md 输出一行 `chapter_title: 《中文标题》`（禁止占位符）；标题须为中文爽文风格、6–12 字、贴合本章爽点/冲突、可作为平台章节名，避免“第X章”式空标题。
 
+## Open Loops 输出硬规范
+- chapter_plan.md 必须包含字段 `chapter_title: 《…》`，且标题用《》包住。
+- Open Loops 的 advance 列表必须明确写出 >=2 个 id；每个 id 都要提供 summary_evidence（一句话证据）。
+- summary_evidence 必须显式包含该 id 文本（原样出现），以便 Archivist 摘要与 QA 文本匹配。
+- 若某 loop 本章会完结：在该 loop 项里标注 planned_resolution: true（或等价标记），提示 Archivist 将其置为 resolved 并写 resolved_in。
+- 禁止出现 TBD/???/待补全/TODO 任何占位符。
+
 ## 输出格式（结构化要点 + 明确字段）
 写入 `runs/YYYY-MM-DD/chapter_plan.md`，必须包含以下字段（用标题与列表给出）：
 

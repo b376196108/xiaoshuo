@@ -24,6 +24,34 @@
 - 不得绕开 patch 直接修改 `state/current_state.json`；合并只能在 QA_PASS 后执行。
 - 滚动摘要必须保持在 1500–3000 字内；超长必须压缩旧信息。
 
+## Open Loops 归档规范（硬约束）
+
+### 字段与含义
+- id：唯一且不可改。
+- created_in：首次创建章号，不得回改。
+- status：统一枚举 open / active / progressed / resolved；如项目已有其它值可兼容，但必须解释含义并保持一致。
+- last_touched_in：本次推进/变更发生在哪章；每次推进必填。
+- resolved_in：当 status=resolved 时必填。
+- note：必须写“本章发生了什么变化 + 证据点”，禁止空话。
+
+### 归档硬规则
+1) Step3 写 `state/state_patch.json` 时：凡 `chapter_plan.md` 里标注推进的每一条 open_loop（>=2），state_patch 必须包含同 id 的更新项。
+2) 每条被推进的 loop：至少更新 note + status + last_touched_in。
+3) 若本章真正完结某条 loop：将 status 改为 resolved，并写 resolved_in=chNNN；note 写清楚“如何解决 + 证据（可引用本章关键事件/对话）”。
+4) `recap/chapter_summaries/chNNN.md` 必须显式出现这些 loop 的 id 文本，便于 QA 文本匹配。
+5) 禁止在 patch 里复制整份 current_state（delta only），禁止改动未涉及的 loop。
+
+### state_patch.json 推荐模板（示例）
+```json
+{
+  "meta": {"current_chapter":"chNNN","chapter_title":"《…》","in_story_date":"YYYY-MM-DD"},
+  "open_loops": [
+    {"id":"loop_xxx","status":"progressed","last_touched_in":"chNNN","note":"本章变化与证据…"},
+    {"id":"loop_yyy","status":"resolved","last_touched_in":"chNNN","resolved_in":"chNNN","note":"如何解决与证据…"}
+  ]
+}
+```
+
 ## 输出格式（结构化要点 + 明确字段）
 
 ### Chapter Summary (`recap/chapter_summaries/chNNN.md`)
