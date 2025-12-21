@@ -1,8 +1,8 @@
 {
   "characters": {
     "lin_cen": {
-      "location": "loc_village_lane",
-      "status": "回执失落后争到临时口簿口径（需证人补证并加半日劳力与一捆柴）；与许文淑对峙并记下证人名单；在粮铺修筛、扛粮换到少量种子并用漂选与风选筛出可播籽；名册贴出补证红印，鸡鸣前必须交回执"
+      "location": "loc_river_canal",
+      "status": "在井口争水并用修绳换到半桶清水和旧木桶，欠王老拐一回人情；发现水面黑沫异味，准备追查上游"
     },
     "lin_guozhu": {
       "location": "loc_lin_home",
@@ -11,8 +11,8 @@
   },
   "continuity_locks": {},
   "meta": {
-    "chapter_title": "《回执失手抢种子》",
-    "current_chapter": "ch004",
+    "chapter_title": "《井口争水见黑沫》",
+    "current_chapter": "ch005",
     "in_story_date": "1100-03-15",
     "total_chapters": 80,
     "words_per_chapter": 3200
@@ -22,7 +22,8 @@
       "created_in": "ch001",
       "description": "林家余粮见底，需尽快找到稳定口粮",
       "id": "loop_food_shortage",
-      "note": "ch004 推进证据：以修筛+搬运换到一小包种子并用漂选/风选筛出可播籽，但耗水与劳力债增加",
+      "last_touched_in": "ch005",
+      "note": "ch005 证据：林岑用修好取水工具换到半桶清水和旧木桶，当场入缸但付出两担挑水与人情债，短期口粮仍受限水与水质影响",
       "owner": "lin_cen",
       "planned_payoff_window": "ch001-ch010",
       "status": "progressed",
@@ -32,10 +33,11 @@
       "created_in": "ch001",
       "description": "许文淑借流言与占便宜施压林家",
       "id": "loop_toxic_neighbor",
-      "note": "ch004 推进证据：巷口对峙并记下证人名单，许文淑放话卡名额，冲突升级",
+      "last_touched_in": "ch005",
+      "note": "ch005 证据：许文淑在井口当众挑衅并散布占名额口径，林岑回击并记下人证，冲突公开化",
       "owner": "xu_wenshu",
       "planned_payoff_window": "ch001-ch012",
-      "status": "active",
+      "status": "progressed",
       "trigger": "巷道口当众挖苦与挑衅"
     }
   ],
