@@ -1,0 +1,5 @@
+﻿neo4j
+chromadb
+python-dotenv
+pyyaml
+requests

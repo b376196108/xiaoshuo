@@ -1,0 +1,33 @@
+# Repository Audit Report
+
+## Summary
+- Result: FAIL
+- Errors: 5
+- Warnings: 0
+
+## Broken references
+
+- None
+
+## Auto-fixed references
+
+- `docs\directory_structure.md`:6 - `xiaoshuo_ai.config.loader` -> `xiaoshuo_ai.config.loader`
+
+## Python compile results
+
+- All python files compile successfully.
+
+## JSON validation
+
+- `schemas\json\book.json` - FAIL (Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0))
+- `schemas\json\chapter.json` - FAIL (Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0))
+- `schemas\json\character.json` - FAIL (Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0))
+- `schemas\json\item.json` - FAIL (Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0))
+- `schemas\json\location.json` - FAIL (Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0))
+
+## YAML validation
+
+- `configs\app.yaml` - PASS
+- `configs\logging.yaml` - PASS
+- `configs\memory.yaml` - PASS
+- `schemas\chroma\collections.yaml` - PASS

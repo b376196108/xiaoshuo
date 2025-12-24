@@ -1,0 +1,6 @@
+﻿collections:
+  - id: novel_memory
+    description: Placeholder collection for embeddings.
+    metadata: {}
+
+# TODO: define Chroma collection schema when vectors are finalized.

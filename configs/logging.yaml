@@ -1,0 +1,18 @@
+﻿version: 1
+formatters:
+  standard:
+    format: "%(asctime)s %(levelname)s %(name)s: %(message)s"
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: standard
+    level: INFO
+root:
+  level: INFO
+  handlers: [console]
+memory:
+  neo4j_uri: ${NEO4J_URI}
+  neo4j_user: ${NEO4J_USER}
+  neo4j_password: ${NEO4J_PASSWORD}
+  chroma_host: ${CHROMA_HOST}
+  chroma_port: ${CHROMA_PORT}

@@ -1,0 +1,9 @@
+﻿{
+  "python.defaultInterpreterPath": "python",
+  "python.envFile": "${workspaceFolder}/.env",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/src"
+  ],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": null
+}

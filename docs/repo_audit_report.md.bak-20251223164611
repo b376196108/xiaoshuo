@@ -1,0 +1,33 @@
+# Repository Audit Report
+
+## Summary
+- Result: FAIL
+- Errors: 1
+- Warnings: 0
+
+## Broken references
+
+- `docs\repo_audit_report.md`:32 (memory.yaml) - 模块路径无法定位
+
+## Auto-fixed references
+
+- `docs\repo_audit_report.md`:14 - `config.loader` -> `xiaoshuo_ai.config.loader`
+
+## Python compile results
+
+- All python files compile successfully.
+
+## JSON validation
+
+- `schemas\json\book.json` - PASS
+- `schemas\json\chapter.json` - PASS
+- `schemas\json\character.json` - PASS
+- `schemas\json\item.json` - PASS
+- `schemas\json\location.json` - PASS
+
+## YAML validation
+
+- `configs\app.yaml` - PASS
+- `configs\logging.yaml` - PASS
+- `configs\memory.yaml` - PASS
+- `schemas\chroma\collections.yaml` - PASS

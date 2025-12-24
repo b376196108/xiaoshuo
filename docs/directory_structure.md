@@ -1,0 +1,35 @@
+﻿# 目录结构
+
+## 顶层分区
+| 目录 | 说明 | 备注 |
+| --- | --- | --- |
+| `configs/` | 存放应用、日志与记忆服务所需的 YAML 配置，统一注入环境变量。 | 由后续的 `xiaoshuo_ai.config.loader` 解析并共享 Neo4j/Chroma 凭据。 |
+| `prompts/` | 按用途（书籍/章节/合规）组织的 Codex 提示模板。 | 交由 Agents 使用时直接读取，便于统一调优。 |
+| `schemas/` | Neo4j Cypher 模式与 Chroma/JSON schema 占位文件。 | Cypher 为节点/关系的约束与索引，JSON 描述域模型草稿。 |
+| `scripts/` | 通用脚本，例如 `scaffold.ps1`、内存健康检查、种子脚本。 | 设计为幂等，帮助快速恢复工程骨架或验证服务。 |
+| `runtime/` | 运行期的小说、日志、缓存目录，包含 `.gitkeep`。 | 保证 Git 追踪运行时目录结构而不提交实际数据。 |
+| `docs/` | 架构、API、用法与本概览文档。 | 后续可扩展更多细节或工作流说明。 |
+| `tests/` | 自动化测试的预留位置。 | 待逻辑实现成熟后补充单元/集成测试。 |
+| `src/` | 使用 `src` 目录布局的源码，主包为 `xiaoshuo_ai`。 | 包含 CLI、Agents、记忆适配器与工具函数。 |
+
+## `src/xiaoshuo_ai` 子模块
+- `cli.py`：A 机写作台的入口，将来负责加载配置、启动编排与展示结果。
+- `config/`：读取 `.env` 与 configs 下的 YAML，将凭据与端点封装成共享设置。
+- `core/`：编排器、流水线与上下文构造器，用于撮合章节规划、写作、复核等步骤。
+- `agents/`：规划、写作、总结、批评、编辑与合规 Agents，定义阶段性的 Codex 交互。
+- `memory/`：分为 graph（Neo4j）与 vector（Chroma）目录，分别处理硬记忆与软记忆的客户端/模式/查询。
+- `domain/`：域模型与校验器，确保故事数据符合结构化约束。
+- `storage/`：本地存储/helper，负责持久化草稿与快照。
+- `utils/`：ID、时间、重试、日志等通用辅助函数。
+
+## Neo4j（硬记忆）与 Chroma（软记忆）策略
+硬记忆落在 `memory/graph/` 下的 Neo4j 客户端与 Cypher，记录人物、章节、关系等结构化事实；软记忆则通过 `memory/vector/` 的 Chroma 客户端与集合保存文本的向量表示。保持两类连接器分离，便于按工作流同步或选择性查询。
+
+## 提示与提醒模板管理
+`prompts/book`、`prompts/chapter` 与 `prompts/compliance` 收录给 Codex 的指导信息。每个阶段（如 `01_outline`、`03_edit`）都应有描述用途、输入与 guardrail 的文件，文档即未来 prompt 调优的主数据源。
+
+## 拓展建议
+- 增加针对 `scripts/healthcheck_memory` 与编排器的集成测试，确保 A/B 机间的记忆通道可用。
+- 补充 A 机与 B 机之间网络与认证的交接说明，连同 configs 的文档一起维护。
+- 为 `prompts/` 引入 `jinja` 模板或验证器，确保提示逻辑在版本迭代时保持一致性。
+

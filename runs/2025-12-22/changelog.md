@@ -1,6 +1,0 @@
-- Updated: recap/chapter_summaries/ch003.md（同步正文要点与结尾钩子）
-- Updated: recap/rolling_recap.md（补充 ch003 事件与当前目标）
-- Updated: state/state_patch.json（meta.current_chapter=ch003；角色状态与 open_loops 进度）
-- Open loops progressed: loop_food_shortage, loop_toxic_neighbor
-- Hook: 回执不见，鸡鸣前点卯迫近
-- synced_at: 2025-12-20T20:39:09
