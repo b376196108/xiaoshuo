@@ -1,0 +1,2 @@
+[console_scripts]
+xiaoshuo = xiaoshuo_ai.cli:main

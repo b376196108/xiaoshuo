@@ -1,0 +1,67 @@
+﻿from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, Optional
+
+from dotenv import load_dotenv
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+ENV_PATH = REPO_ROOT / ".env"
+DEFAULT_TIMEOUT = 5.0
+
+
+@dataclass(frozen=True)
+class Settings:
+    neo4j_uri: str
+    neo4j_user: str
+    neo4j_password: str
+    healthcheck_timeout: float = DEFAULT_TIMEOUT
+
+
+def _get_env(name: str) -> Optional[str]:
+    candidates = (name, f"\ufeff{name}")
+    for key in candidates:
+        value = os.getenv(key)
+        if value:
+            if key != name:
+                print("[ENV] WARN: 你的 .env 可能带 BOM，请用 UTF-8 无 BOM 保存。")
+            return value.strip()
+    return None
+
+
+def load_settings() -> Settings:
+    if not ENV_PATH.exists():
+        raise FileNotFoundError("未找到 .env，请复制 .env.example 并填写配置。")
+
+    load_dotenv(ENV_PATH, override=True, encoding="utf-8")
+
+    values: Dict[str, Optional[str]] = {
+        "NEO4J_URI": _get_env("NEO4J_URI"),
+        "NEO4J_USER": _get_env("NEO4J_USER"),
+        "NEO4J_PASSWORD": _get_env("NEO4J_PASSWORD"),
+    }
+    missing = [key for key, value in values.items() if not value]
+    if missing:
+        raise RuntimeError(f"缺少环境变量：{
+.join(missing)}")
+
+    timeout_raw = _get_env("HEALTHCHECK_TIMEOUT")
+    timeout = DEFAULT_TIMEOUT
+    if timeout_raw:
+        try:
+            timeout = float(timeout_raw)
+        except ValueError:
+            print("[ENV] WARN: HEALTHCHECK_TIMEOUT 非数字，使用默认值 5 秒。")
+
+    return Settings(
+        neo4j_uri=values["NEO4J_URI"],
+        neo4j_user=values["NEO4J_USER"],
+        neo4j_password=values["NEO4J_PASSWORD"],
+        healthcheck_timeout=timeout,
+    )
+
+
+__all__ = ["Settings", "load_settings"]
+

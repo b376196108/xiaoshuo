@@ -1,0 +1,52 @@
+﻿import sys
+
+from xiaoshuo_ai.config import load_settings
+from xiaoshuo_ai.memory.neo4j_client import Neo4jMemoryClient
+
+
+def main() -> int:
+    name = "林风"
+    try:
+        settings = load_settings()
+        client = Neo4jMemoryClient(settings)
+
+        last_props = {}
+        for i in range(10):
+            last_props = {
+                "age": 18 + i,
+                "trait": f"阶段-{i}",
+                "status": f"测试写入-{i}",
+            }
+            client.upsert_character(name, last_props)
+
+        with client._driver.session() as session:
+            record = session.run(
+                "MATCH (c:Character {name:$name}) RETURN count(c) AS n, c",
+                name=name,
+            ).single()
+
+        if not record:
+            print("[FAIL] 未查询到角色节点")
+            return 1
+
+        count = record["n"]
+        props = dict(record["c"]) if record["c"] else {}
+        if count != 1:
+            print(f"[FAIL] 节点数量异常，期望 1，实际 {count}")
+            return 1
+
+        for key, value in last_props.items():
+            if props.get(key) != value:
+                print(f"[FAIL] 属性未覆盖: {key}={props.get(key)} (期望 {value})")
+                return 1
+
+        print("[PASS] 幂等写入验证通过")
+        return 0
+    except Exception as exc:
+        print(f"[FAIL] 幂等写入验证失败: {type(exc).__name__}: {exc}")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+

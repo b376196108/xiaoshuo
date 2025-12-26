@@ -1,0 +1,205 @@
+﻿"""Chroma 软记忆客户端。"""
+
+from __future__ import annotations
+
+from typing import Dict, List, Optional
+
+import requests
+
+from xiaoshuo_ai.config import Settings
+from xiaoshuo_ai.memory.embedding import EmbeddingProvider
+
+COLLECTION_CHAPTER_SUMMARIES = "chapter_summaries"
+COLLECTION_STYLE_SNIPPETS = "style_snippets"
+COLLECTION_SCENE_MEMORY = "scene_memory"
+
+HEARTBEAT_KEYS = ("heartbeat", "nanosecond heartbeat", "nanosecond_heartbeat")
+DEFAULT_TENANT = "default_tenant"
+DEFAULT_DATABASE = "default_database"
+
+
+class ChromaMemoryClient:
+    def __init__(self, settings: Settings, embedder: Optional[EmbeddingProvider] = None) -> None:
+        self._settings = settings
+        self._embedder = embedder
+        self._client_cache = None
+        self._rest_base = f"http://{settings.chroma_host}:{settings.chroma_port}/api/v2"
+        self._tenant = DEFAULT_TENANT
+        self._database = DEFAULT_DATABASE
+
+    def _client(self):
+        if self._client_cache is not None:
+            return self._client_cache
+        try:
+            import chromadb
+        except Exception as exc:
+            raise RuntimeError("chromadb 未安装或不可用") from exc
+        try:
+            client = chromadb.HttpClient(
+                host=self._settings.chroma_host,
+                port=self._settings.chroma_port,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"Chroma 连接失败：{type(exc).__name__}: {exc}"
+            ) from exc
+        self._client_cache = client
+        return client
+
+    def _rest_request(self, method: str, path: str, payload: Optional[Dict] = None):
+        url = f"{self._rest_base}{path}"
+        response = requests.request(
+            method,
+            url,
+            json=payload,
+            timeout=self._settings.healthcheck_timeout,
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"Chroma HTTP 错误：{response.status_code} {response.text}")
+        if response.text:
+            return response.json()
+        return {}
+
+    def _rest_get_collection(self, name: str) -> Optional[Dict]:
+        url = (
+            f"{self._rest_base}/tenants/{self._tenant}/databases/{self._database}"
+            f"/collections/{name}"
+        )
+        response = requests.get(url, timeout=self._settings.healthcheck_timeout)
+        if response.status_code == 404:
+            return None
+        if response.status_code >= 400:
+            raise RuntimeError(f"Chroma HTTP 错误：{response.status_code} {response.text}")
+        return response.json()
+
+    def _rest_create_collection(self, name: str) -> Dict:
+        payload = {
+            "name": name,
+            "metadata": {"hnsw:space": "cosine"},
+            "get_or_create": True,
+        }
+        return self._rest_request(
+            "post",
+            f"/tenants/{self._tenant}/databases/{self._database}/collections",
+            payload,
+        )
+
+    def _rest_get_collection_id(self, name: str) -> str:
+        info = self._rest_get_collection(name)
+        if info is None:
+            info = self._rest_create_collection(name)
+        if "id" not in info:
+            raise RuntimeError(f"Chroma 返回缺少集合 id：{info}")
+        return info["id"]
+
+    def healthcheck(self) -> bool:
+        url = f"http://{self._settings.chroma_host}:{self._settings.chroma_port}/api/v2/heartbeat"
+        response = requests.get(url, timeout=self._settings.healthcheck_timeout)
+        if response.status_code != 200:
+            raise RuntimeError(f"Chroma 心跳失败：HTTP {response.status_code}")
+        payload = response.json()
+        heartbeat = None
+        for key in HEARTBEAT_KEYS:
+            if key in payload:
+                heartbeat = payload[key]
+                break
+        if heartbeat is None:
+            raise RuntimeError(f"Chroma 心跳字段缺失：{payload}")
+        print(f"[Chroma] 通过：heartbeat={heartbeat}")
+        return True
+
+    def get_or_create_collection(self, name: str):
+        try:
+            client = self._client()
+            try:
+                return client.get_collection(name)
+            except Exception:
+                return client.create_collection(name=name, metadata={"hnsw:space": "cosine"})
+        except Exception:
+            return self._rest_get_collection_id(name)
+
+    def delete_collection(self, name: str) -> None:
+        try:
+            client = self._client()
+            client.delete_collection(name)
+            return
+        except Exception:
+            self._rest_request(
+                "delete",
+                f"/tenants/{self._tenant}/databases/{self._database}/collections/{name}",
+            )
+
+    def upsert_texts(
+        self,
+        collection: str,
+        ids: List[str],
+        texts: List[str],
+        metadatas: List[Dict],
+        embeddings: Optional[List[List[float]]] = None,
+    ) -> None:
+        if not (len(ids) == len(texts) == len(metadatas)):
+            raise ValueError("id/文本/元数据长度必须一致")
+        if embeddings is None:
+            if not self._embedder:
+                raise RuntimeError("未提供向量计算器")
+            embeddings = self._embedder.embed_texts(texts)
+        try:
+            col = self.get_or_create_collection(collection)
+            if hasattr(col, "upsert"):
+                col.upsert(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings)
+                return
+            if hasattr(col, "add"):
+                col.delete(ids=ids)
+                col.add(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings)
+                return
+        except Exception:
+            pass
+        collection_id = self._rest_get_collection_id(collection)
+        payload = {
+            "ids": ids,
+            "embeddings": embeddings,
+            "metadatas": metadatas,
+            "documents": texts,
+            "uris": None,
+        }
+        self._rest_request(
+            "post",
+            f"/tenants/{self._tenant}/databases/{self._database}/collections/{collection_id}/upsert",
+            payload,
+        )
+
+    def query_text(
+        self,
+        collection: str,
+        query: str,
+        n_results: int = 5,
+        where: Optional[Dict] = None,
+    ) -> Dict:
+        if not self._embedder:
+            raise RuntimeError("未提供向量计算器")
+        embedding = self._embedder.embed_texts([query])[0]
+        try:
+            col = self.get_or_create_collection(collection)
+            if hasattr(col, "query"):
+                return col.query(
+                    query_embeddings=[embedding],
+                    n_results=n_results,
+                    where=where,
+                    include=["documents", "metadatas", "distances", "ids"],
+                )
+        except Exception:
+            pass
+        collection_id = self._rest_get_collection_id(collection)
+        payload = {
+            "ids": None,
+            "query_embeddings": [embedding],
+            "n_results": n_results,
+            "where": where,
+            "where_document": None,
+            "include": ["documents", "metadatas", "distances", "ids"],
+        }
+        return self._rest_request(
+            "post",
+            f"/tenants/{self._tenant}/databases/{self._database}/collections/{collection_id}/query",
+            payload,
+        )

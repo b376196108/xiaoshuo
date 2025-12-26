@@ -1,5 +1,7 @@
-﻿neo4j
-chromadb
-python-dotenv
+﻿neo4j>=5.0
+requests>=2.0
+python-dotenv>=1.0
 pyyaml
-requests
+chromadb>=0.5
+sentence-transformers>=2.2
+

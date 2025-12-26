@@ -1,0 +1,833 @@
+version: 1
+name: memory_ontology_v1
+encoding: utf-8
+language: zh-Hans
+description: >
+  Topic-agnostic novel memory ontology for Neo4j (hard memory) + Chroma (soft memory).
+  Engineered for million-word consistency: stable IDs, alias merge, deterministic ingest,
+  conflict resolution, and prompt hard-memory extraction.
+
+# =========================================================
+# 0) 模块开关（题材未定时：保持通用默认）
+# =========================================================
+modules:
+  enable_faction: true
+  enable_skill: true
+  enable_scene: true
+  enable_plot_thread: true
+  enable_chapter: true
+  enable_species: false
+  enable_currency: false
+
+# =========================================================
+# 1) 全局规范（命名、去重、审计、冲突解决）
+# =========================================================
+global:
+  # 1.1 ID 策略：稳定哈希（强烈建议）
+  # key 的生成逻辑：由脚本按 unique_keys 拼接后写入到 _key
+  id_strategy:
+    type: stable_hash
+    algo: sha1
+    length: 12
+    format: "{label}_{hash}"       # 例：Character_1a2b3c4d5e6f
+    hash_input: "{label}|{key}"    # key=自然键字符串（脚本生成）
+
+  # 1.2 名称标准化（写入前、检索时都统一）
+  normalize:
+    trim: true
+    collapse_whitespace: true
+    fullwidth_to_halfwidth: true
+    casefold_latin: true
+    normalize_punct: true
+    alias_merge: true
+
+  # 1.3 标签策略
+  tag_policy:
+    type: list[str]
+    max_tags: 16
+    max_len_each: 14
+
+  # 1.4 审计字段（建议所有实体都带）
+  audit_fields:
+    created_at: true
+    updated_at: true
+    source_chapter_no: true
+    source_type: true       # manual / extracted / imported
+    confidence: true        # 0~1
+
+  # 1.5 冲突解决：回写时谁覆盖谁
+  conflict_resolution:
+    priority: [manual, imported, extracted]
+    strategy:
+      scalar_fields: "prefer_higher_priority_else_latest"
+      list_fields: "merge_unique_keep_order"
+      tags_fields: "merge_unique"
+    dynamic_fields:
+      # 允许随剧情变化覆盖（即使是 extracted）
+      allow_overwrite:
+        - "Character.status"
+        - "Character.goals"
+        - "Character.current_location"
+        - "Item.status"
+        - "PlotThread.status"
+      # 尽量保护的字段（除非 manual）
+      protect_unless_manual:
+        - "Character.gender"
+        - "Character.origin"
+
+  reserved_keys: ["_id", "_key", "_hash", "_meta"]
+
+# =========================================================
+# 2) 存储映射（Neo4j/Chroma 工程落地信息）
+# =========================================================
+storage:
+  neo4j:
+    default_node_key_property: "_key"
+    default_id_property: "_id"
+    default_hash_property: "_hash"
+    audit_properties:
+      created_at: "created_at"
+      updated_at: "updated_at"
+      source_chapter_no: "source_chapter_no"
+      source_type: "source_type"
+      confidence: "confidence"
+
+  chroma:
+    collections:
+      chapter_summaries:
+        desc: "每章摘要（全局召回）"
+        metadata_keys: ["chapter_no", "pov", "major_characters", "major_locations", "plot_threads"]
+      scene_memory:
+        desc: "场景级记忆（复用氛围与节奏）"
+        metadata_keys: ["chapter_no", "scene_key", "location", "participants", "tags"]
+      style_snippets:
+        desc: "风格佳句/对白口吻样例（保持笔触一致）"
+        metadata_keys: ["chapter_no", "character", "tags"]
+      entity_facts:
+        desc: "实体事实片段（角色/地点/物品关键事实）"
+        metadata_keys: ["entity_label", "entity_name", "chapter_no", "tags"]
+
+    embedding_policy:
+      chunk_chars: 900
+      overlap_chars: 120
+      max_chunks_per_chapter:
+        chapter_summaries: 1
+        scene_memory: 12
+        style_snippets: 10
+        entity_facts: 20
+
+# =========================================================
+# 3) 实体（节点）定义
+# =========================================================
+entities:
+
+  Character:
+    label: Character
+    unique_keys: [name]
+    primary_display: name
+    fields:
+      name:
+        type: str
+        required: true
+        desc: "角色展示名（v1 强制唯一，最稳）"
+
+      aliases:
+        type: list[str]
+        required: false
+        default: []
+        desc: "别名/外号/称呼"
+
+      gender:
+        type: enum
+        required: false
+        enum: [male, female, unknown]
+        default: unknown
+        desc: "性别（通用）"
+
+      age_range:
+        type: str
+        required: false
+        desc: "年龄段：18-22 / 30+ / 未知"
+
+      origin:
+        type: str
+        required: false
+        desc: "出身/背景（保护字段：非 manual 尽量不改）"
+
+      occupation:
+        type: str
+        required: false
+        desc: "职业/身份：学生/警察/宗门弟子/CEO（题材无关）"
+
+      appearance:
+        type: str
+        required: false
+        desc: "外貌要点（短句）"
+
+      distinguishing_marks:
+        type: list[str]
+        required: false
+        default: []
+        desc: "明显特征：疤痕/纹身/眼色等"
+
+      personality_tags:
+        type: list[str]
+        required: false
+        default: []
+        desc: "性格标签（短词）"
+
+      values:
+        type: list[str]
+        required: false
+        default: []
+        desc: "价值观/底线（短句）"
+
+      speech_style:
+        type: str
+        required: false
+        desc: "口癖/说话节奏/常用句式"
+
+      taboo_sayings:
+        type: list[str]
+        required: false
+        default: []
+        desc: "角色禁忌/不能说的话（可选）"
+
+      goals:
+        type: list[str]
+        required: false
+        default: []
+        desc: "阶段目标（动态字段，可随剧情变）"
+
+      fears:
+        type: list[str]
+        required: false
+        default: []
+        desc: "恐惧/软肋（爽点工具）"
+
+      secrets:
+        type: list[str]
+        required: false
+        default: []
+        desc: "秘密/底牌（短句，不写长篇）"
+
+      status:
+        type: enum
+        required: false
+        enum: [active, injured, missing, detained, dead, unknown]
+        default: active
+        desc: "当前状态（动态字段）"
+
+      health_state:
+        type: str
+        required: false
+        desc: "健康状态补充：内伤/中毒/失眠等"
+
+      mental_state:
+        type: str
+        required: false
+        desc: "精神状态：焦虑/冷静/暴怒等"
+
+      current_location:
+        type: str
+        required: false
+        desc: "当前所在地（与 Location.name 对齐；动态字段）"
+
+      # 强题材绑定：保持为 str，未来由 profile/enums_extend 或 style_bible 约束
+      power_level:
+        type: str
+        required: false
+        desc: "战力/境界/评级（题材相关，保持开放字符串）"
+
+      skills_tags:
+        type: list[str]
+        required: false
+        default: []
+        desc: "技能标签（快速召回用，题材无关）"
+
+      notes:
+        type: str
+        required: false
+        desc: "补充设定（谨慎使用）"
+
+  Location:
+    label: Location
+    unique_keys: [name]
+    primary_display: name
+    fields:
+      name:
+        type: str
+        required: true
+
+      aliases:
+        type: list[str]
+        required: false
+        default: []
+
+      type:
+        type: str
+        required: false
+        desc: "地点类型：城市/学校/宗门/酒馆/废厂等（题材无关）"
+
+      region:
+        type: str
+        required: false
+        desc: "区域/国家/省份/星球等"
+
+      atmosphere_tags:
+        type: list[str]
+        required: false
+        default: []
+        desc: "氛围标签：阴冷/繁华/赛博/末世等"
+
+      visuals:
+        type: list[str]
+        required: false
+        default: []
+        desc: "可视化要点：霓虹/雨夜/铁锈味等"
+
+      rules:
+        type: list[str]
+        required: false
+        default: []
+        desc: "地点规则/禁忌/秩序"
+
+      security_level:
+        type: enum
+        required: false
+        enum: [low, medium, high, unknown]
+        default: unknown
+        desc: "安全等级（通用抽象）"
+
+      notes:
+        type: str
+        required: false
+
+  Item:
+    label: Item
+    unique_keys: [name, type]
+    primary_display: name
+    fields:
+      name:
+        type: str
+        required: true
+
+      type:
+        type: str
+        required: true
+        desc: "物品类型：武器/戒指/药剂/文件/芯片等（题材无关）"
+
+      aliases:
+        type: list[str]
+        required: false
+        default: []
+
+      rarity:
+        type: enum
+        required: false
+        enum: [common, rare, epic, legendary, unknown]
+        default: unknown
+        desc: "稀有度（通用抽象；不强绑定题材）"
+
+      # 强题材绑定：保持为 str
+      power_level:
+        type: str
+        required: false
+        desc: "品阶/等级（题材相关，保持开放字符串）"
+
+      effects:
+        type: list[str]
+        required: false
+        default: []
+        desc: "效果/能力（短句）"
+
+      constraints:
+        type: list[str]
+        required: false
+        default: []
+        desc: "限制/副作用（短句）"
+
+      appearance:
+        type: str
+        required: false
+        desc: "外观要点"
+
+      provenance:
+        type: str
+        required: false
+        desc: "来历：谁给的/哪来的"
+
+      status:
+        type: enum
+        required: false
+        enum: [available, broken, lost, consumed, sealed, unknown]
+        default: available
+        desc: "物品状态（动态字段）"
+
+      notes:
+        type: str
+        required: false
+
+  Event:
+    label: Event
+    unique_keys: [key]
+    primary_display: key
+    fields:
+      key:
+        type: str
+        required: true
+        desc: "事件唯一键：EV_CH005_废厂伏击（建议统一规则）"
+
+      chapter_no:
+        type: int
+        required: true
+        desc: "发生章节号（用于时间线）"
+
+      type:
+        type: str
+        required: false
+        desc: "事件类型：冲突/转折/信息/胜利/失败/告白等（开放字符串）"
+
+      summary:
+        type: str
+        required: true
+        desc: "一句话摘要（必须可读、可检索）"
+
+      stakes:
+        type: list[str]
+        required: false
+        default: []
+        desc: "赌注/代价（爽点核心）"
+
+      outcome:
+        type: list[str]
+        required: false
+        default: []
+        desc: "结果/后果（短句）"
+
+      notes:
+        type: str
+        required: false
+
+  Faction:
+    enabled_if: "modules.enable_faction"
+    label: Faction
+    unique_keys: [name]
+    primary_display: name
+    fields:
+      name:
+        type: str
+        required: true
+
+      # 强题材绑定：保持为 str（公司/宗门/帮派/政府/军团…都能装）
+      type:
+        type: str
+        required: false
+        desc: "组织类型（开放字符串）"
+
+      ideology:
+        type: str
+        required: false
+        desc: "理念/口号（短句）"
+
+      resources:
+        type: list[str]
+        required: false
+        default: []
+        desc: "资源：钱/人/武器/情报等"
+
+      notes:
+        type: str
+        required: false
+
+  Skill:
+    enabled_if: "modules.enable_skill"
+    label: Skill
+    unique_keys: [name]
+    primary_display: name
+    fields:
+      name:
+        type: str
+        required: true
+
+      # 强题材绑定：保持为 str（武技/法术/黑客/枪械/医疗…）
+      category:
+        type: str
+        required: false
+        desc: "技能类别（开放字符串）"
+
+      description:
+        type: str
+        required: false
+        desc: "一句话描述"
+
+      # 强题材绑定：保持为 str
+      level_scale:
+        type: str
+        required: false
+        desc: "等级体系（开放字符串）：1-9 / 入门-大成 / S-A-B 等"
+
+      constraints:
+        type: list[str]
+        required: false
+        default: []
+        desc: "限制/代价（短句）"
+
+      notes:
+        type: str
+        required: false
+
+  Scene:
+    enabled_if: "modules.enable_scene"
+    label: Scene
+    unique_keys: [key]
+    primary_display: key
+    fields:
+      key:
+        type: str
+        required: true
+        desc: "场景键：SC_CH005_001（建议统一规则）"
+
+      chapter_no:
+        type: int
+        required: true
+
+      location_name:
+        type: str
+        required: true
+        desc: "地点名（与 Location.name 对齐）"
+
+      time_of_day:
+        type: enum
+        required: false
+        enum: [morning, noon, afternoon, night, unknown]
+        default: unknown
+
+      pov:
+        type: str
+        required: false
+        desc: "本场 POV（角色名）"
+
+      purpose:
+        type: list[str]
+        required: false
+        default: []
+        desc: "场景目的：推进线索/打脸/升级等"
+
+      beats:
+        type: list[str]
+        required: false
+        default: []
+        desc: "节拍：起-承-转-合（短句）"
+
+      tags:
+        type: list[str]
+        required: false
+        default: []
+
+      notes:
+        type: str
+        required: false
+
+  PlotThread:
+    enabled_if: "modules.enable_plot_thread"
+    label: PlotThread
+    unique_keys: [key]
+    primary_display: key
+    fields:
+      key:
+        type: str
+        required: true
+        desc: "线索键：PT_MAIN_001 / PT_复仇_002（建议统一规则）"
+
+      name:
+        type: str
+        required: true
+        desc: "线索名：失踪的父亲/谁害了我 等"
+
+      # 线索类型相对通用：可保留 enum，不会绑定题材
+      type:
+        type: enum
+        required: false
+        enum: [main, side, foreshadow, clue, romance, power, mystery, unknown]
+        default: unknown
+
+      introduced_chapter:
+        type: int
+        required: false
+
+      planned_payoff_chapter:
+        type: int
+        required: false
+
+      status:
+        type: enum
+        required: false
+        enum: [open, hinted, escalated, paid_off, dropped]
+        default: open
+
+      description:
+        type: str
+        required: false
+        desc: "一句话描述（极重要，便于召回与一致性）"
+
+      notes:
+        type: str
+        required: false
+
+  Chapter:
+    enabled_if: "modules.enable_chapter"
+    label: Chapter
+    unique_keys: [chapter_no]
+    primary_display: chapter_no
+    fields:
+      chapter_no:
+        type: int
+        required: true
+
+      title:
+        type: str
+        required: false
+
+      pov:
+        type: str
+        required: false
+        desc: "主 POV（角色名）"
+
+      hook:
+        type: str
+        required: false
+        desc: "开头钩子（短句）"
+
+      summary:
+        type: str
+        required: false
+        desc: "本章摘要（短）"
+
+      cliffhanger:
+        type: str
+        required: false
+        desc: "结尾钩子（短句）"
+
+# =========================================================
+# 4) 关系（边）定义
+# =========================================================
+relations:
+
+  LOCATED_IN:
+    from: Character
+    to: Location
+    directed: true
+    properties:
+      chapter_no: { type: int, required: true }
+      note: { type: str, required: false }
+
+  RELATES_TO:
+    from: Character
+    to: Character
+    directed: true
+    properties:
+      kind:
+        type: enum
+        required: true
+        enum: [friend, ally, enemy, family, mentor, student, lover, rival, unknown]
+      intensity:
+        type: int
+        required: false
+        min: 1
+        max: 5
+        default: 3
+      since_chapter:
+        type: int
+        required: false
+      note:
+        type: str
+        required: false
+
+  OWNS:
+    from: Character
+    to: Item
+    directed: true
+    properties:
+      since_chapter: { type: int, required: false }
+      status:
+        type: enum
+        required: false
+        enum: [owned, lent, lost, destroyed, unknown]
+        default: owned
+      note: { type: str, required: false }
+
+  USES_ITEM:
+    from: Character
+    to: Item
+    directed: true
+    properties:
+      chapter_no: { type: int, required: true }
+      effect: { type: str, required: false }
+
+  PARTICIPATES_IN:
+    from: Character
+    to: Event
+    directed: true
+    properties:
+      role: { type: str, required: false, desc: "发起者/受害者/旁观者" }
+
+  TAKES_PLACE_IN:
+    from: Event
+    to: Location
+    directed: true
+    properties:
+      chapter_no: { type: int, required: true }
+
+  CAUSES:
+    from: Event
+    to: Event
+    directed: true
+    properties:
+      strength:
+        type: int
+        required: false
+        min: 1
+        max: 5
+        default: 3
+      note: { type: str, required: false }
+
+  HAS_EVENT:
+    enabled_if: "modules.enable_chapter"
+    from: Chapter
+    to: Event
+    directed: true
+    properties:
+      order: { type: int, required: false }
+
+  HAS_SCENE:
+    enabled_if: "modules.enable_chapter"
+    enabled_if_all: ["modules.enable_scene", "modules.enable_chapter"]
+    from: Chapter
+    to: Scene
+    directed: true
+    properties:
+      order: { type: int, required: false }
+
+  SCENE_LOCATED_IN:
+    enabled_if: "modules.enable_scene"
+    from: Scene
+    to: Location
+    directed: true
+    properties:
+      chapter_no: { type: int, required: true }
+
+  MEMBER_OF:
+    enabled_if: "modules.enable_faction"
+    from: Character
+    to: Faction
+    directed: true
+    properties:
+      since_chapter: { type: int, required: false }
+      position: { type: str, required: false }
+
+  CONTROLS:
+    enabled_if: "modules.enable_faction"
+    from: Faction
+    to: Location
+    directed: true
+    properties:
+      chapter_no: { type: int, required: false }
+
+  HAS_SKILL:
+    enabled_if: "modules.enable_skill"
+    from: Character
+    to: Skill
+    directed: true
+    properties:
+      level: { type: str, required: false, desc: "等级（开放字符串）" }
+      since_chapter: { type: int, required: false }
+
+  INVOLVES_THREAD:
+    enabled_if: "modules.enable_plot_thread"
+    from: Event
+    to: PlotThread
+    directed: true
+    properties:
+      chapter_no: { type: int, required: true }
+      action:
+        type: enum
+        required: false
+        enum: [introduce, hint, escalate, payoff, drop, unknown]
+        default: unknown
+
+# =========================================================
+# 5) Prompt Builder：硬记忆字段（写章前必喂）
+# =========================================================
+prompt_hard_memory:
+  Character: [name, aliases, gender, age_range, origin, occupation, appearance, personality_tags, speech_style, goals, status, power_level, current_location]
+  Location: [name, type, region, atmosphere_tags, rules, visuals, security_level]
+  Item: [name, type, rarity, power_level, effects, constraints, provenance, status]
+  Event: [key, chapter_no, type, summary, stakes, outcome]
+  Faction: [name, type, ideology, resources]
+  Skill: [name, category, description, level_scale, constraints]
+  Scene: [key, chapter_no, location_name, time_of_day, pov, purpose, beats, tags]
+  PlotThread: [key, name, type, status, description, introduced_chapter, planned_payoff_chapter]
+  Chapter: [chapter_no, title, pov, hook, summary, cliffhanger]
+
+prompt_policy:
+  ordering:
+    - "Chapter"
+    - "PlotThread"
+    - "Character"
+    - "Faction"
+    - "Location"
+    - "Item"
+    - "Skill"
+    - "Event"
+    - "Scene"
+  token_budget_hint:
+    hard_memory_tokens: 1200
+    soft_memory_tokens: 900
+
+# =========================================================
+# 6) Ingest：章节回写规范（工程关键：确定性可解析）
+# =========================================================
+ingest_rules_v1:
+  require_end_of_chapter_appendix: true
+  appendix_format: "yaml"
+  appendix_marker_begin: "===MEMORY_APPENDIX_BEGIN==="
+  appendix_marker_end: "===MEMORY_APPENDIX_END==="
+
+  appendix_schema:
+    chapter_no: int
+    new_or_updated:
+      characters: list[object]
+      locations: list[object]
+      items: list[object]
+      factions: list[object]
+      skills: list[object]
+      plot_threads: list[object]
+      events: list[object]
+      scenes: list[object]
+    relations: list[object]
+
+  minimum_lines:
+    characters: 0
+    locations: 0
+    items: 0
+    events: 0
+    relations: 0
+
+  relation_object_spec:
+    type: str
+    from_label: str
+    from_key: str
+    to_label: str
+    to_key: str
+    properties: object
+
+# =========================================================
+# 7) 合规（接口：词库与风格圣经独立文件）
+# =========================================================
+compliance:
+  blocklist_file: "configs/blocklist_v1.yaml"
+  style_bible_file: "configs/style_bible_v1.md"
+  policy:
+    hard_actions: ["reject", "replace", "skip_paragraph"]
+    soft_actions: ["downgrade", "fade_out", "metaphorize"]

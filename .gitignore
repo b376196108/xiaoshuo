@@ -5,6 +5,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .idea/
+.env
 .vscode/*
 !.vscode/settings.json
 !.vscode/launch.json
@@ -12,3 +13,4 @@ runtime/logs/*
 !runtime/logs/.gitkeep
 runtime/cache/*
 !runtime/cache/.gitkeep
+

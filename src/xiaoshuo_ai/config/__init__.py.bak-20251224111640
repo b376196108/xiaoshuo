@@ -1,7 +1,6 @@
 ﻿from __future__ import annotations
 
 import importlib.util
-import sys
 from pathlib import Path
 
 _MODULE_NAME = "xiaoshuo_ai._config_file"
@@ -12,11 +11,9 @@ if not _spec or not _spec.loader:
     raise ImportError("无法加载 config.py")
 
 _module = importlib.util.module_from_spec(_spec)
-sys.modules[_MODULE_NAME] = _module
 _spec.loader.exec_module(_module)
 
 Settings = _module.Settings
 load_settings = _module.load_settings
-get_settings = load_settings  # 兼容更通用命名
 
-__all__ = ["Settings", "load_settings", "get_settings"]
+__all__ = ["Settings", "load_settings"]

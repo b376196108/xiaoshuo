@@ -1,0 +1,25 @@
+Metadata-Version: 2.4
+Name: xiaoshuo-ai
+Version: 0.0.1
+Summary: Dual-machine AI novel writing system scaffold with Neo4j and Chroma memories.
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+
+﻿# xiaoshuo AI 写作系统骨架
+
+## 目标
+- 为 A 机写作台和 B 机记忆服务器（Neo4j + Chroma）提供落地、工程级的骨架，保留 Codex 后续填充工作流的接口。
+
+## 环境
+- 以 Python 3.11+ 为目标；虽然已有名为 `xiaoshuo` 的 `venv`，但本仓库建议在工作区激活 `.venv`。
+
+## 配置
+- 复制 `.env.example` 为 `.env`，并填写 `NEO4J_URI`、`NEO4J_USER`、`NEO4J_PASSWORD`、`CHROMA_HOST`、`CHROMA_PORT`（B 机地址：`192.168.1.195`）。
+
+## 脚本
+- 在结构变更后使用 `powershell -ExecutionPolicy Bypass -File .\scripts\scaffold.ps1` 重建骨架。
+- 内存健康检查脚本目前为 TODO，待工作流明朗后补充具体实现。
+
+## 目录概览
+- 参阅 `docs/directory_structure.md`，了解每个模块如何协同以及两台机器如何借助 Neo4j/Chroma 的记忆打通数据链路。
+
